@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import LenisProvider from "@/components/LenisProvider";
+import CursorFollower from "@/components/CursorFollower";
 
 export const metadata: Metadata = {
   title: "QuizMaster Pro",
@@ -23,8 +25,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased font-sans">
+        <LenisProvider>
+          <CursorFollower />
+          {children}
+        </LenisProvider>
+      </body>
     </html>
   );
 }

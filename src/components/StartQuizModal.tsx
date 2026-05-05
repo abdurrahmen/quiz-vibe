@@ -75,7 +75,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
           <div className="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-primary text-[32px] filled">rocket_launch</span>
           </div>
-          <h2 className="text-3xl font-bold text-on-surface">Start Your Quiz</h2>
+          <h2 className="text-2xl font-bold text-on-surface">Start Your Quiz</h2>
           <p className="text-on-surface-variant mt-2">Set up your session parameters below to begin.</p>
         </div>
 
@@ -146,7 +146,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary to-tertiary text-white font-semibold py-3.5 px-6 rounded-xl shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
+              className="w-full bg-gradient-to-r from-primary to-tertiary text-white font-semibold py-3.5 px-6 rounded-2xl shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
             >
               {loading ? (
                 <span className="material-symbols-outlined animate-spin">refresh</span>

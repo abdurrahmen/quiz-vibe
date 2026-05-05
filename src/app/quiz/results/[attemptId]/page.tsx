@@ -38,7 +38,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
     <div className="bg-background text-on-background antialiased flex flex-col min-h-screen">
       {/* TopNavBar */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-ambient flex justify-between items-center px-6 py-4 w-full">
-        <Link href="/" className="text-2xl font-black tracking-tighter text-gradient">
+        <Link href="/" className="text-2xl font-extrabold tracking-tight text-gradient">
           QuizMaster Pro
         </Link>
         <div className="flex items-center gap-4">
@@ -54,7 +54,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
           <p className="text-on-surface-variant font-medium mb-1">
             {attempt.category?.name || 'Mixed Categories'} • {attempt.difficulty}
           </p>
-          <h1 className="text-4xl md:text-5xl font-black text-on-surface">Quiz Results</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-on-surface">Quiz Results</h1>
         </div>
 
         {/* Bento Grid: Hero & Stats */}
@@ -87,7 +87,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
               </svg>
               {/* Center Text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-black text-on-surface">{attempt.score}<span className="text-2xl">%</span></span>
+                <span className="text-5xl font-extrabold text-on-surface">{attempt.score}<span className="text-2xl">%</span></span>
               </div>
             </div>
             
@@ -106,7 +106,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
                 <span className="material-symbols-outlined text-primary">check_circle</span>
                 <span className="font-semibold text-sm tracking-wide">Correct</span>
               </div>
-              <div className="text-5xl font-black text-primary">{attempt.correct_count}</div>
+              <div className="text-5xl font-extrabold text-primary">{attempt.correct_count}</div>
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient flex flex-col justify-between hover:shadow-ambient-lg transition-shadow">
@@ -114,7 +114,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
                 <span className="material-symbols-outlined text-error">cancel</span>
                 <span className="font-semibold text-sm tracking-wide">Wrong</span>
               </div>
-              <div className="text-5xl font-black text-error">{attempt.wrong_count}</div>
+              <div className="text-5xl font-extrabold text-error">{attempt.wrong_count}</div>
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient flex flex-col justify-between hover:shadow-ambient-lg transition-shadow">
@@ -122,7 +122,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
                 <span className="material-symbols-outlined text-outline">help</span>
                 <span className="font-semibold text-sm tracking-wide">Unanswered</span>
               </div>
-              <div className="text-5xl font-black text-outline">{attempt.unanswered_count}</div>
+              <div className="text-5xl font-extrabold text-outline">{attempt.unanswered_count}</div>
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient flex flex-col justify-between hover:shadow-ambient-lg transition-shadow">
@@ -130,7 +130,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
                 <span className="material-symbols-outlined text-tertiary">timer</span>
                 <span className="font-semibold text-sm tracking-wide">Time</span>
               </div>
-              <div className="text-4xl font-black text-on-surface">{formatTime(attempt.time_taken_seconds)}</div>
+              <div className="text-4xl font-extrabold text-on-surface">{formatTime(attempt.time_taken_seconds)}</div>
             </div>
           </div>
         </div>

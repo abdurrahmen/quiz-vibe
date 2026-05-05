@@ -6,6 +6,9 @@ import { createClient } from '@/utils/supabase/client'
 import type { Category } from '@/lib/types'
 import StartQuizModal from '@/components/StartQuizModal'
 import { Wrapper3D } from '@/components/ui/3d-wrapper'
+import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation'
+import { AnimatedCounter } from '@/components/AnimatedCounter'
+import { motion } from 'motion/react'
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -54,9 +57,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-ambient">
+      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-80 border-b border-slate-100/80 shadow-ambient">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-black tracking-tighter text-gradient">
+          <div className="text-2xl font-extrabold tracking-tight text-gradient">
             QuizMaster Pro
           </div>
           
@@ -101,36 +104,47 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-24 px-6 overflow-hidden bg-gradient-to-br from-primary to-tertiary">
-        {/* Decorative blobs */}
-        <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-black/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+      <BackgroundGradientAnimation
+        gradientBackgroundStart="rgb(77, 65, 223)"
+        gradientBackgroundEnd="rgb(41, 73, 225)"
+        firstColor="255, 255, 255"
+        secondColor="240, 248, 255"
+        thirdColor="245, 245, 255"
+        fourthColor="220, 230, 255"
+        fifthColor="255, 250, 250"
+        sixthColor="250, 240, 255"
+        seventhColor="245, 250, 255"
+        pointerColor="255, 255, 255"
+        size="80%"
+        interactive={true}
+        containerClassName="h-auto w-full relative rounded-b-[3rem] md:rounded-b-[4rem]"
+        className="relative z-50 pt-24 pb-28 px-6"
+      >
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
           <div className="flex flex-col gap-6">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium w-fit">
               <span className="material-symbols-outlined text-base">auto_awesome</span>
               AI-Powered Learning Platform
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
               Test Your<br />
               <span className="text-yellow-300">Knowledge</span>
             </h1>
-            <p className="text-lg text-white/90 max-w-lg leading-relaxed">
+            <p className="text-lg text-white/90 max-w-lg leading-relaxed font-medium">
               Challenge yourself with expertly crafted quizzes. Elevate your learning through 
               engaging assessments and insightful analytics.
             </p>
             <div className="flex flex-wrap gap-3 mt-2">
               <button
                 onClick={() => setShowStartModal(true)}
-                className="flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
                 <span className="material-symbols-outlined">rocket_launch</span>
                 Start Quiz Now
               </button>
               <Link
                 href="#how-it-works"
-                className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 transition-all"
+                className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-all"
               >
                 Learn More
                 <span className="material-symbols-outlined">arrow_downward</span>
@@ -138,8 +152,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero visual */}
-          <div className="relative">
+          {/* Hero visual — floating */}
+          <div className="relative animate-float">
             <Wrapper3D maxRotation={20} translateZ={60} perspective={false} className="w-full">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-2xl">
                 <div className="bg-white rounded-xl p-5 shadow-lg mb-4">
@@ -191,36 +205,51 @@ export default function HomePage() {
             </Wrapper3D>
           </div>
         </div>
-      </section>
+      </BackgroundGradientAnimation>
 
       {/* Stats Bar */}
-      <section className="bg-primary-fixed border-y border-surface-variant py-10 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+      <section className="bg-primary-fixed border-y border-surface-variant py-12 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {[
-            { label: 'Total Questions', value: stats.questions > 0 ? `${stats.questions}+` : '50K+', icon: 'quiz' },
-            { label: 'Categories', value: stats.categories > 0 ? `${stats.categories}` : '120+', icon: 'category' },
-            { label: 'Quizzes Taken', value: stats.attempts > 0 ? `${stats.attempts}+` : '2M+', icon: 'school' },
+            { label: 'Total Questions', value: stats.questions > 0 ? stats.questions : 50, suffix: stats.questions > 0 ? '+' : 'K+', icon: 'quiz' },
+            { label: 'Categories', value: stats.categories > 0 ? stats.categories : 120, suffix: stats.categories > 0 ? '' : '+', icon: 'category' },
+            { label: 'Quizzes Taken', value: stats.attempts > 0 ? stats.attempts : 2, suffix: stats.attempts > 0 ? '+' : 'M+', icon: 'school' },
           ].map((s, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              className="flex flex-col items-center gap-2"
+            >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <span className="material-symbols-outlined">{s.icon}</span>
               </div>
-              <div className="text-4xl font-black text-primary">{s.value}</div>
+              <div className="text-4xl font-extrabold text-primary">
+                <AnimatedCounter value={s.value} suffix={s.suffix} />
+              </div>
               <div className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">{s.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-surface-container-low">
+      <section id="features" className="py-24 px-6 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-on-surface mb-4">Why Choose QuizMaster Pro</h2>
-            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-4xl font-extrabold text-on-surface mb-4">Why Choose QuizMaster Pro</h2>
+            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
               Discover the tools you need to assess, learn, and grow effectively.
             </p>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
@@ -266,34 +295,48 @@ export default function HomePage() {
                 color: 'text-secondary',
               },
             ].map((f, i) => (
-              <div
+              <motion.div
                 key={i}
-                className="bg-white rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="bg-white rounded-2xl p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4"
               >
                 <div className={`w-12 h-12 rounded-xl ${f.bg} flex items-center justify-center ${f.color}`}>
                   <span className="material-symbols-outlined">{f.icon}</span>
                 </div>
-                <h3 className="text-xl font-bold text-on-surface">{f.title}</h3>
-                <p className="text-on-surface-variant leading-relaxed">{f.desc}</p>
-              </div>
+                <h3 className="text-lg font-bold text-on-surface">{f.title}</h3>
+                <p className="text-on-surface-variant leading-relaxed text-[15px]">{f.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Categories Section */}
-      <section id="categories" className="py-20 px-6 bg-surface">
+      <section id="categories" className="py-24 px-6 bg-surface">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-on-surface mb-4">Explore Categories</h2>
-            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-4xl font-extrabold text-on-surface mb-4">Explore Categories</h2>
+            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
               Pick a subject that interests you and start testing your knowledge.
             </p>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.length > 0 ? categories.map((cat) => (
-              <button
+            {categories.length > 0 ? categories.map((cat, i) => (
+              <motion.button
                 key={cat.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
                 onClick={() => setShowStartModal(true)}
                 className="group relative bg-white rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 overflow-hidden text-left"
               >
@@ -307,7 +350,7 @@ export default function HomePage() {
                   <span>Start Quiz</span>
                   <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </div>
-              </button>
+              </motion.button>
             )) : (
               // Skeleton loading
               Array.from({ length: 6 }).map((_, i) => (
@@ -324,14 +367,20 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-6 bg-surface-container-low">
+      <section id="how-it-works" className="py-24 px-6 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-on-surface mb-4">How It Works</h2>
-            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-4xl font-extrabold text-on-surface mb-4">How It Works</h2>
+            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
               Get started in three simple steps and begin your learning journey.
             </p>
-          </div>
+          </motion.div>
           <div className="relative max-w-4xl mx-auto">
             <div className="absolute top-1/2 left-0 w-full h-0.5 bg-surface-variant -translate-y-1/2 hidden md:block z-0" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
@@ -340,13 +389,20 @@ export default function HomePage() {
                 { step: '2', title: 'Answer Questions', desc: 'Engage with beautifully designed, interactive questions.', icon: 'quiz' },
                 { step: '3', title: 'Get Results', desc: 'Review your performance instantly with detailed analytics.', icon: 'analytics' },
               ].map((s, i) => (
-                <div key={i} className="flex flex-col items-center text-center gap-4 bg-surface-container-low p-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-tertiary text-white flex items-center justify-center text-xl font-black shadow-primary border-4 border-surface-container-low">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, delay: i * 0.2 }}
+                  className="flex flex-col items-center text-center gap-4 bg-surface-container-low p-6"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-tertiary text-white flex items-center justify-center text-xl font-extrabold shadow-primary border-4 border-surface-container-low">
                     {s.step}
                   </div>
-                  <h3 className="text-xl font-bold text-on-surface">{s.title}</h3>
-                  <p className="text-on-surface-variant leading-relaxed">{s.desc}</p>
-                </div>
+                  <h3 className="text-lg font-bold text-on-surface">{s.title}</h3>
+                  <p className="text-on-surface-variant leading-relaxed text-[15px]">{s.desc}</p>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -354,7 +410,7 @@ export default function HomePage() {
           <div className="text-center mt-12">
             <button
               onClick={() => setShowStartModal(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-tertiary text-white px-10 py-4 rounded-xl font-bold text-lg shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-tertiary text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
             >
               <span className="material-symbols-outlined">rocket_launch</span>
               Get Started Free
@@ -364,17 +420,23 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-surface-container-highest py-10 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-xl font-black text-gradient">QuizMaster Pro</div>
-          <div className="flex gap-6 text-sm text-on-surface-variant">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.6 }}
+        className="bg-surface-container-highest py-12 px-6"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-xl font-extrabold text-gradient">QuizMaster Pro</div>
+          <div className="flex gap-8 text-sm text-on-surface-variant font-medium">
             <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
             <Link href="/admin/login" className="hover:text-primary transition-colors">Admin</Link>
           </div>
           <p className="text-sm text-on-surface-variant">© 2024 QuizMaster Pro. All rights reserved.</p>
         </div>
-      </footer>
+      </motion.footer>
 
       {/* Start Quiz Modal */}
       {showStartModal && (

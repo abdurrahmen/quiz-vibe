@@ -18,7 +18,7 @@ export default function AdminLogin() {
           <div className="text-center mb-10 relative z-10">
             <Link href="/" className="inline-flex justify-center items-center gap-2 mb-4 hover:opacity-80 transition-opacity">
               <span className="material-symbols-outlined text-[36px] text-primary filled">school</span>
-              <h1 className="text-3xl font-bold text-on-surface text-gradient">QuizMaster Pro</h1>
+              <h1 className="text-3xl font-extrabold text-on-surface text-gradient">QuizMaster Pro</h1>
             </Link>
             <p className="text-base text-on-surface-variant font-medium">Admin Login Portal</p>
           </div>
@@ -82,15 +82,36 @@ export default function AdminLogin() {
               </label>
             </div>
             
-            {/* Submit Button */}
-            <button 
-              type="submit" 
-              disabled={isPending}
-              className="w-full bg-gradient-to-r from-primary to-tertiary text-white font-bold py-3.5 px-6 rounded-xl shadow-primary hover:shadow-primary-lg transition-all flex justify-center items-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              <span>{isPending ? 'Authenticating...' : 'Secure Login'}</span>
-              {!isPending && <span className="material-symbols-outlined">arrow_forward</span>}
-            </button>
+            {/* Actions */}
+            <div className="flex flex-col gap-3 mt-2">
+              <button 
+                type="submit" 
+                disabled={isPending}
+                className="w-full bg-gradient-to-r from-primary to-tertiary text-white font-bold py-3.5 px-6 rounded-2xl shadow-primary hover:shadow-primary-lg transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <span>{isPending ? 'Authenticating...' : 'Secure Login'}</span>
+                {!isPending && <span className="material-symbols-outlined">arrow_forward</span>}
+              </button>
+
+              <button 
+                type="button" 
+                disabled={isPending}
+                onClick={(e) => {
+                  const form = e.currentTarget.closest('form');
+                  if (form) {
+                    const emailInput = form.querySelector('#email') as HTMLInputElement;
+                    const pwdInput = form.querySelector('#password') as HTMLInputElement;
+                    if (emailInput) emailInput.value = 'admin@quizmaster.com';
+                    if (pwdInput) pwdInput.value = 'password123';
+                    form.requestSubmit();
+                  }
+                }}
+                className="w-full bg-[#F1F3FF] hover:bg-[#E5E8FB] text-primary font-bold py-3.5 px-6 rounded-2xl transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed border border-transparent hover:border-primary/20"
+              >
+                <span className="material-symbols-outlined">play_circle</span>
+                <span>Demo Login</span>
+              </button>
+            </div>
           </form>
           
           {/* Footer */}

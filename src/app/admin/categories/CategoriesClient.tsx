@@ -150,7 +150,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
               <div className="mt-auto pt-6">
                 <div className="flex justify-between items-end mb-2">
                   <div className="flex flex-col">
-                    <span className="text-3xl font-black text-on-surface leading-none">{category.question_count}</span>
+                    <span className="text-3xl font-extrabold text-on-surface leading-none">{category.question_count}</span>
                     <span className="text-xs font-semibold text-outline uppercase tracking-wider mt-1">Questions</span>
                   </div>
                   <div className="text-right">

@@ -41,14 +41,14 @@ export default function ResultsActions({
     <div className="mt-12 pt-8 border-t border-surface-dim flex flex-col sm:flex-row gap-4 justify-center items-center pb-12">
       <Link
         href="/"
-        className="w-full sm:w-auto px-10 py-4 rounded-xl bg-linear-to-r from-primary to-tertiary text-white font-bold shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
+        className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-linear-to-r from-primary to-tertiary text-white font-bold shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
       >
         <span className="material-symbols-outlined text-[20px]">replay</span>
         Take Another Quiz
       </Link>
       <button
         onClick={handleShare}
-        className="w-full sm:w-auto px-10 py-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all text-center flex items-center justify-center gap-2"
+        className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all text-center flex items-center justify-center gap-2"
       >
         <span className="material-symbols-outlined text-[20px]">share</span>
         Share My Results

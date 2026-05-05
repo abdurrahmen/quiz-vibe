@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
     <main className="flex-1 p-6 md:p-8 overflow-y-auto">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
-        <h1 className="text-3xl font-bold text-on-background">Dashboard Overview</h1>
+        <h1 className="text-3xl font-extrabold text-on-background">Dashboard Overview</h1>
         <p className="text-on-surface-variant mt-1">Welcome back, Admin. Here is what's happening today.</p>
       </div>
 
@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
             </span>
           </div>
           <div>
-            <div className="text-3xl font-bold text-on-surface">{totalQuestions.toLocaleString()}</div>
+            <div className="text-3xl font-extrabold text-on-surface">{totalQuestions.toLocaleString()}</div>
             <div className="text-sm font-semibold text-outline tracking-wide mt-1 uppercase">Total Questions</div>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
             <span className="text-outline text-sm font-semibold flex items-center gap-1">Stable</span>
           </div>
           <div>
-            <div className="text-3xl font-bold text-on-surface">{totalCategories.toLocaleString()}</div>
+            <div className="text-3xl font-extrabold text-on-surface">{totalCategories.toLocaleString()}</div>
             <div className="text-sm font-semibold text-outline tracking-wide mt-1 uppercase">Categories</div>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
             </span>
           </div>
           <div>
-            <div className="text-3xl font-bold text-on-surface">{totalAttempts.toLocaleString()}</div>
+            <div className="text-3xl font-extrabold text-on-surface">{totalAttempts.toLocaleString()}</div>
             <div className="text-sm font-semibold text-outline tracking-wide mt-1 uppercase">Total Attempts</div>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default async function AdminDashboard() {
             </span>
           </div>
           <div>
-            <div className="text-3xl font-bold text-on-surface">{avgScore}%</div>
+            <div className="text-3xl font-extrabold text-on-surface">{avgScore}%</div>
             <div className="text-sm font-semibold text-outline tracking-wide mt-1 uppercase">Avg Score</div>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default async function AdminDashboard() {
               style={{ background: 'conic-gradient(#4d41df 0% 45%, #b0284b 45% 75%, #4865fb 75% 100%)' }}
             >
               <div className="w-32 h-32 bg-surface-container-lowest rounded-full flex flex-col items-center justify-center shadow-inner">
-                <span className="text-3xl font-bold text-on-surface">{totalCategories}</span>
+                <span className="text-3xl font-extrabold text-on-surface">{totalCategories}</span>
                 <span className="text-xs text-outline font-medium uppercase tracking-wide">Active</span>
               </div>
             </div>

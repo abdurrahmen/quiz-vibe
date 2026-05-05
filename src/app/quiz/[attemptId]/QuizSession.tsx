@@ -151,7 +151,7 @@ export default function QuizSession({
       <header className="bg-white sticky top-0 z-50 shadow-sm flex flex-col w-full">
         <div className="flex justify-between items-center px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-on-background font-black text-2xl tracking-tighter text-gradient">QuizMaster Pro</Link>
+            <Link href="/" className="text-on-background font-extrabold text-2xl tracking-tight text-gradient">QuizMaster Pro</Link>
             <div className="h-6 w-px bg-surface-variant hidden sm:block"></div>
             <span className="text-primary font-bold text-sm bg-primary-fixed px-3 py-1 rounded-full hidden sm:block">
               Question {currentIdx + 1} of {questions.length}
@@ -203,7 +203,7 @@ export default function QuizSession({
                 </span>
               )}
             </div>
-            <h2 className="text-3xl font-bold text-on-background leading-tight">
+            <h2 className="text-2xl font-bold text-on-background leading-snug">
               {currentQuestion.question_text}
             </h2>
           </div>
@@ -250,7 +250,7 @@ export default function QuizSession({
             <button
               onClick={() => setCurrentIdx(Math.min(questions.length - 1, currentIdx + 1))}
               disabled={currentIdx === questions.length - 1}
-              className="flex items-center gap-2 px-8 py-3 bg-linear-to-r from-primary to-tertiary text-white rounded-xl font-semibold shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-50 disabled:pointer-events-none"
+              className="flex items-center gap-2 px-8 py-3 bg-linear-to-r from-primary to-tertiary text-white rounded-2xl font-semibold shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-50 disabled:pointer-events-none"
             >
               Next
               <span className="material-symbols-outlined">arrow_forward</span>
