@@ -190,7 +190,11 @@ export default function QuizSession({
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="bg-surface-container-high text-on-surface-variant text-sm font-semibold px-3 py-1 rounded-full">#{currentIdx + 1}</span>
-              <span className="bg-secondary-fixed text-on-secondary-fixed-variant text-sm font-semibold px-3 py-1 rounded-full border border-secondary capitalize">
+              <span className={`text-sm font-bold px-3 py-1 rounded-full border capitalize shadow-sm ${
+                currentQuestion.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' :
+                currentQuestion.difficulty === 'medium' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                'bg-red-100 text-red-700 border-red-200'
+              }`}>
                 {currentQuestion.difficulty}
               </span>
               <span className="bg-primary-fixed text-on-primary-fixed-variant text-sm font-semibold px-3 py-1 rounded-full">
@@ -248,12 +252,31 @@ export default function QuizSession({
               Previous
             </button>
             <button
-              onClick={() => setCurrentIdx(Math.min(questions.length - 1, currentIdx + 1))}
-              disabled={currentIdx === questions.length - 1}
-              className="flex items-center gap-2 px-8 py-3 bg-linear-to-r from-primary to-tertiary text-white rounded-2xl font-semibold shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() => {
+                if (currentIdx === questions.length - 1) {
+                  handleSubmit()
+                } else {
+                  setCurrentIdx(currentIdx + 1)
+                }
+              }}
+              disabled={isSubmitting}
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold transition-all shadow-md ${
+                currentIdx === questions.length - 1 
+                ? 'bg-secondary text-white shadow-secondary hover:shadow-secondary-lg' 
+                : 'bg-linear-to-r from-primary to-tertiary text-white shadow-primary hover:shadow-primary-lg'
+              } hover:-translate-y-0.5`}
             >
-              Next
-              <span className="material-symbols-outlined">arrow_forward</span>
+              {currentIdx === questions.length - 1 ? (
+                <>
+                  {isSubmitting ? 'Submitting...' : 'Submit Exam'}
+                  <span className="material-symbols-outlined">send</span>
+                </>
+              ) : (
+                <>
+                  Next
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </>
+              )}
             </button>
           </div>
         </div>

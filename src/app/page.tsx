@@ -18,7 +18,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const supabase = createClient()
-    
+
     async function loadData() {
       const [catRes, qRes, attRes] = await Promise.all([
         supabase.from('categories').select('*').order('name'),
@@ -32,7 +32,7 @@ export default function HomePage() {
         attempts: attRes.count ?? 0,
       })
     }
-    
+
     loadData()
   }, [])
 
@@ -62,7 +62,7 @@ export default function HomePage() {
           <div className="text-2xl font-extrabold tracking-tight text-gradient">
             QuizMaster Pro
           </div>
-          
+
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-slate-600 hover:text-primary transition-colors font-medium">Features</Link>
@@ -80,7 +80,7 @@ export default function HomePage() {
             </Link>
             <button
               onClick={() => setShowStartModal(true)}
-              className="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-primary to-tertiary shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
+              className="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-linear-to-r from-primary to-tertiary shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
             >
               Start Quiz
             </button>
@@ -92,7 +92,7 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden bg-white border-t border-slate-100 px-6 py-4 flex flex-col gap-3 animate-fade-in">
@@ -133,7 +133,7 @@ export default function HomePage() {
               <span className="text-yellow-300">Knowledge</span>
             </h1>
             <p className="text-lg text-white/90 max-w-lg leading-relaxed font-medium">
-              Challenge yourself with expertly crafted quizzes. Elevate your learning through 
+              Challenge yourself with expertly crafted quizzes. Elevate your learning through
               engaging assessments and insightful analytics.
             </p>
             <div className="flex flex-wrap gap-3 mt-2">
@@ -178,17 +178,16 @@ export default function HomePage() {
                   {['Automated Integration', 'Artificial Intelligence ✓', 'Advanced Informatics', 'Applied Interpolation'].map((opt, i) => (
                     <div
                       key={i}
-                      className={`text-xs p-2.5 rounded-lg mb-2 border-2 transition-all ${
-                        i === 1
-                          ? 'border-primary bg-primary-fixed text-primary font-semibold'
-                          : 'border-surface-variant bg-surface text-on-surface-variant'
-                      }`}
+                      className={`text-xs p-2.5 rounded-lg mb-2 border-2 transition-all ${i === 1
+                        ? 'border-primary bg-primary-fixed text-primary font-semibold'
+                        : 'border-surface-variant bg-surface text-on-surface-variant'
+                        }`}
                     >
                       {opt}
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -342,8 +341,8 @@ export default function HomePage() {
                 onClick={() => setShowStartModal(true)}
                 className="group relative bg-white rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 overflow-hidden text-left"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity ${categoryColors[cat.name] || 'from-primary to-tertiary'}`} />
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${categoryColors[cat.name] || 'from-primary to-tertiary'} flex items-center justify-center text-white mb-4 shadow-md`}>
+                <div className={`absolute inset-0 bg-linear-to-br opacity-0 group-hover:opacity-5 transition-opacity ${categoryColors[cat.name] || 'from-primary to-tertiary'}`} />
+                <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${categoryColors[cat.name] || 'from-primary to-tertiary'} flex items-center justify-center text-white mb-4 shadow-md`}>
                   <span className="material-symbols-outlined">{categoryIcons[cat.name] || 'category'}</span>
                 </div>
                 <h3 className="text-lg font-bold text-on-surface mb-1">{cat.name}</h3>
@@ -399,7 +398,7 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: i * 0.2 }}
                   className="flex flex-col items-center text-center gap-4 bg-surface-container-low p-6"
                 >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-tertiary text-white flex items-center justify-center text-xl font-extrabold shadow-primary border-4 border-surface-container-low">
+                  <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-tertiary text-white flex items-center justify-center text-xl font-extrabold shadow-primary border-4 border-surface-container-low">
                     {s.step}
                   </div>
                   <h3 className="text-lg font-bold text-on-surface">{s.title}</h3>
@@ -408,11 +407,11 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          
+
           <div className="text-center mt-12">
             <button
               onClick={() => setShowStartModal(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-tertiary text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-primary to-tertiary text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
             >
               <span className="material-symbols-outlined">rocket_launch</span>
               Get Started Free
@@ -436,7 +435,7 @@ export default function HomePage() {
             <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
             <Link href="/admin/login" className="hover:text-primary transition-colors">Admin</Link>
           </div>
-          <p className="text-sm text-on-surface-variant">© 2024 QuizMaster Pro. All rights reserved.</p>
+          <p className="text-sm text-on-surface-variant">© 2026 QuizMaster Pro. All rights reserved.</p>
         </div>
       </motion.footer>
 

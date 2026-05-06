@@ -192,7 +192,7 @@ export default async function LeaderboardPage() {
       <footer className="bg-surface-container-highest py-12 px-6 mt-20">
         <div className="max-w-7xl mx-auto text-center">
           <div className="text-xl font-extrabold text-gradient mb-4">QuizMaster Pro</div>
-          <p className="text-sm text-on-surface-variant">© 2024 QuizMaster Pro. All rights reserved.</p>
+          <p className="text-sm text-on-surface-variant">© 2026 QuizMaster Pro. All rights reserved.</p>
         </div>
       </footer>
     </div>

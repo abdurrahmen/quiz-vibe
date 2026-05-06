@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Category, Difficulty } from '@/lib/types'
@@ -19,6 +19,43 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
     category_id: 'all',
     difficulty: 'all' as Difficulty | 'all',
   })
+  const [counts, setCounts] = useState<Record<string, number>>({
+    all: 1, // Assume all has questions unless category has 0 total
+    easy: 1,
+    medium: 1,
+    hard: 1,
+  })
+
+  // Check availability when category changes
+  useEffect(() => {
+    const checkAvailability = async () => {
+      const supabase = createClient()
+      let query = supabase.from('questions').select('difficulty', { count: 'exact' })
+      
+      if (formData.category_id !== 'all') {
+        query = query.eq('category_id', formData.category_id)
+      }
+
+      const { data, error: countError } = await query
+      
+      if (countError) return
+
+      const newCounts = { all: data.length, easy: 0, medium: 0, hard: 0 }
+      data.forEach(q => {
+        if (q.difficulty in newCounts) {
+          newCounts[q.difficulty as keyof typeof newCounts]++
+        }
+      })
+      setCounts(newCounts)
+
+      // If current difficulty is now empty, reset to all
+      if (formData.difficulty !== 'all' && newCounts[formData.difficulty] === 0) {
+        setFormData(prev => ({ ...prev, difficulty: 'all' }))
+      }
+    }
+
+    checkAvailability()
+  }, [formData.category_id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -134,10 +171,10 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
                 className="w-full bg-surface-container-high text-on-surface py-3 pl-11 pr-10 rounded-xl border-2 border-transparent focus:border-primary focus:bg-surface outline-none transition-all appearance-none cursor-pointer"
                 disabled={loading}
               >
-                <option value="all">All Levels</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
+                <option value="all">All Levels ({counts.all})</option>
+                <option value="easy" disabled={counts.easy === 0}>Easy {counts.easy === 0 ? '(Empty)' : `(${counts.easy})`}</option>
+                <option value="medium" disabled={counts.medium === 0}>Medium {counts.medium === 0 ? '(Empty)' : `(${counts.medium})`}</option>
+                <option value="hard" disabled={counts.hard === 0}>Hard {counts.hard === 0 ? '(Empty)' : `(${counts.hard})`}</option>
               </select>
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
             </div>
