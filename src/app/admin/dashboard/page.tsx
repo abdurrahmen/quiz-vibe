@@ -39,7 +39,8 @@ export default async function AdminDashboard() {
 
   const catCounts: Record<string, number> = {}
   catStats?.forEach(row => {
-    const name = row.category?.name || 'Mixed'
+    const cat = row.category as any
+    const name = (Array.isArray(cat) ? cat[0]?.name : cat?.name) || 'Mixed'
     catCounts[name] = (catCounts[name] || 0) + 1
   })
 
