@@ -32,12 +32,34 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
     .limit(5)
 
-  // Chart data (simulated for UI)
-  const categorySplit = [
-    { name: 'Science', percentage: 45, color: 'bg-primary' },
-    { name: 'History', percentage: 30, color: 'bg-secondary' },
-    { name: 'Math', percentage: 25, color: 'bg-tertiary-container' },
-  ]
+  // Fetch real analytics
+  const { data: catStats } = await supabase
+    .from('quiz_attempts')
+    .select('category:categories(name)')
+
+  const catCounts: Record<string, number> = {}
+  catStats?.forEach(row => {
+    const name = row.category?.name || 'Mixed'
+    catCounts[name] = (catCounts[name] || 0) + 1
+  })
+
+  const totalCatAttempts = catStats?.length || 1
+  const categorySplit = Object.entries(catCounts).map(([name, count]) => ({
+    name,
+    percentage: Math.round((count / totalCatAttempts) * 100),
+    color: name === 'Science' ? 'bg-primary' : name === 'History' ? 'bg-secondary' : 'bg-tertiary-container'
+  })).sort((a, b) => b.percentage - a.percentage).slice(0, 3)
+
+  // Score distribution for the bar chart
+  const { data: allScores } = await supabase.from('quiz_attempts').select('score')
+  const brackets = [0, 0, 0, 0, 0] // 0-20, 21-40, 41-60, 61-80, 81-100
+  allScores?.forEach(row => {
+    const s = Number(row.score)
+    const idx = Math.min(4, Math.floor(s / 20))
+    brackets[idx]++
+  })
+  const maxBracket = Math.max(...brackets, 1)
+  const scoreDistribution = brackets.map(count => (count / maxBracket) * 100)
 
   return (
     <main className="flex-1 p-6 md:p-8 overflow-y-auto">
@@ -119,20 +141,20 @@ export default async function AdminDashboard() {
             </button>
           </div>
           <div className="flex-1 bg-surface-container-low rounded-xl flex items-end justify-between p-6 gap-2 relative min-h-[300px]">
-            {/* Simulated Bar Chart */}
-            <div className="w-full bg-primary-container/20 rounded-t-md h-[20%] hover:bg-primary-container/40 transition-colors cursor-pointer group relative">
+            {/* Score Distribution Bar Chart */}
+            <div className="w-full bg-primary-container/20 rounded-t-md hover:bg-primary-container/40 transition-all cursor-pointer group relative" style={{ height: `${scoreDistribution[0]}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">0-20%</div>
             </div>
-            <div className="w-full bg-primary-container/40 rounded-t-md h-[35%] hover:bg-primary-container/60 transition-colors cursor-pointer group relative">
+            <div className="w-full bg-primary-container/40 rounded-t-md hover:bg-primary-container/60 transition-all cursor-pointer group relative" style={{ height: `${scoreDistribution[1]}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">21-40%</div>
             </div>
-            <div className="w-full bg-primary-container/60 rounded-t-md h-[50%] hover:bg-primary-container/80 transition-colors cursor-pointer group relative">
+            <div className="w-full bg-primary-container/60 rounded-t-md hover:bg-primary-container/80 transition-all cursor-pointer group relative" style={{ height: `${scoreDistribution[2]}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">41-60%</div>
             </div>
-            <div className="w-full bg-primary rounded-t-md h-[85%] hover:bg-tertiary transition-colors cursor-pointer group relative shadow-md">
+            <div className="w-full bg-primary rounded-t-md hover:bg-tertiary transition-all cursor-pointer group relative shadow-md" style={{ height: `${scoreDistribution[3]}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">61-80%</div>
             </div>
-            <div className="w-full bg-primary-container/80 rounded-t-md h-[60%] hover:bg-primary-container transition-colors cursor-pointer group relative">
+            <div className="w-full bg-primary-container/80 rounded-t-md hover:bg-primary-container transition-all cursor-pointer group relative" style={{ height: `${scoreDistribution[4]}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">81-100%</div>
             </div>
           </div>
@@ -150,11 +172,20 @@ export default async function AdminDashboard() {
             {/* Simulated Donut Chart using Conic Gradient */}
             <div 
               className="w-48 h-48 rounded-full shadow-inner relative flex items-center justify-center transition-transform hover:scale-105 duration-300" 
-              style={{ background: 'conic-gradient(#4d41df 0% 45%, #b0284b 45% 75%, #4865fb 75% 100%)' }}
+              style={{ 
+                background: categorySplit.length > 0 
+                  ? `conic-gradient(${categorySplit.map((cat, i) => {
+                      const start = categorySplit.slice(0, i).reduce((acc, c) => acc + c.percentage, 0)
+                      const end = start + cat.percentage
+                      const color = i === 0 ? '#4d41df' : i === 1 ? '#b0284b' : '#4865fb'
+                      return `${color} ${start}% ${end}%`
+                    }).join(', ')})`
+                  : '#e0e0e0'
+              }}
             >
               <div className="w-32 h-32 bg-surface-container-lowest rounded-full flex flex-col items-center justify-center shadow-inner">
-                <span className="text-3xl font-extrabold text-on-surface">{totalCategories}</span>
-                <span className="text-xs text-outline font-medium uppercase tracking-wide">Active</span>
+                <span className="text-3xl font-extrabold text-on-surface">{totalCatAttempts}</span>
+                <span className="text-xs text-outline font-medium uppercase tracking-wide">Attempts</span>
               </div>
             </div>
             

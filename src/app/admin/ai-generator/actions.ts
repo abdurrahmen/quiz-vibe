@@ -1,6 +1,6 @@
 'use server'
 
-import { GoogleGenAI } from '@google/genai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export async function generateQuestions(params: {
   topic: string
@@ -13,7 +13,8 @@ export async function generateQuestions(params: {
     return { error: 'GEMINI_API_KEY is not set in your environment variables. Please add it to .env.local to use the AI Generator.' }
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
 
   const prompt = `You are an expert quiz creator. Generate ${params.count} questions about "${params.topic}".
 Difficulty level: ${params.difficulty}
@@ -33,12 +34,10 @@ Each object must have exactly these keys and types:
 Return ONLY the JSON array.`
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    })
-
-    const text = response.text || ''
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text()
+    
     // Try to parse the JSON. Remove markdown formatting if the model still outputs it
     let cleanedText = text.trim()
     if (cleanedText.startsWith('```json')) {

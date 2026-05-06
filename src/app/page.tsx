@@ -67,6 +67,7 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-slate-600 hover:text-primary transition-colors font-medium">Features</Link>
             <Link href="#categories" className="text-slate-600 hover:text-primary transition-colors font-medium">Categories</Link>
+            <Link href="/leaderboard" className="text-slate-600 hover:text-primary transition-colors font-medium">Leaderboard</Link>
             <Link href="#how-it-works" className="text-slate-600 hover:text-primary transition-colors font-medium">How It Works</Link>
           </div>
 
@@ -97,6 +98,7 @@ export default function HomePage() {
           <div className="md:hidden bg-white border-t border-slate-100 px-6 py-4 flex flex-col gap-3 animate-fade-in">
             <Link href="#features" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Features</Link>
             <Link href="#categories" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Categories</Link>
+            <Link href="/leaderboard" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
             <Link href="#how-it-works" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>How It Works</Link>
             <Link href="/admin/login" className="text-primary font-semibold py-2">Admin Login</Link>
           </div>

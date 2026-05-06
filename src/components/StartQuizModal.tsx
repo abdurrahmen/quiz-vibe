@@ -29,10 +29,10 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
 
     setLoading(true)
     setError('')
-    
+
     try {
       const supabase = createClient()
-      
+
       // Create a new attempt record
       const { data, error: dbError } = await supabase
         .from('quiz_attempts')
@@ -44,7 +44,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
         })
         .select('id')
         .single()
-        
+
       if (dbError) throw dbError
       if (!data) throw new Error('Failed to create attempt')
 
@@ -58,12 +58,12 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-inverse-surface/40 backdrop-blur-[4px] p-6 animate-fade-in">
-      <div 
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-xs p-6 animate-fade-in">
+      <div
         className="bg-surface w-full max-w-[480px] rounded-2xl p-8 shadow-ambient-lg border border-outline-variant/30 flex flex-col relative animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-container transition-colors"
           aria-label="Close modal"
@@ -84,9 +84,10 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
             <label htmlFor="username" className="text-sm font-semibold text-on-surface tracking-wide">Username</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">person</span>
-              <input 
+              <input
                 id="username"
-                type="text" 
+                type="text"
+                autoComplete="username"
                 value={formData.username}
                 onChange={e => setFormData({ ...formData, username: e.target.value })}
                 className={`w-full bg-surface-container-high text-on-surface py-3 pl-11 pr-4 rounded-xl border-2 transition-all outline-none ${error ? 'border-error' : 'border-transparent focus:border-primary focus:bg-surface'}`}
@@ -106,7 +107,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
             <label htmlFor="category" className="text-sm font-semibold text-on-surface tracking-wide">Category</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">category</span>
-              <select 
+              <select
                 id="category"
                 value={formData.category_id}
                 onChange={e => setFormData({ ...formData, category_id: e.target.value })}
@@ -126,7 +127,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
             <label htmlFor="difficulty" className="text-sm font-semibold text-on-surface tracking-wide">Difficulty</label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">tune</span>
-              <select 
+              <select
                 id="difficulty"
                 value={formData.difficulty}
                 onChange={e => setFormData({ ...formData, difficulty: e.target.value as Difficulty | 'all' })}
@@ -143,10 +144,10 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
           </div>
 
           <div className="mt-6 pt-4 border-t border-surface-container-highest">
-            <button 
+            <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary to-tertiary text-white font-semibold py-3.5 px-6 rounded-2xl shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
+              className="w-full bg-linear-to-r from-primary to-tertiary text-white font-semibold py-3.5 px-6 rounded-2xl shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
             >
               {loading ? (
                 <span className="material-symbols-outlined animate-spin">refresh</span>

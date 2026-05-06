@@ -9,7 +9,7 @@ const supabase = createClient(
 
 async function createAdmin() {
   const { data, error } = await supabase.auth.signUp({
-    email: 'admin@quizmaster.com',
+    email: 'admin.quizvibe@gmail.com',
     password: 'password123',
     options: {
       data: {

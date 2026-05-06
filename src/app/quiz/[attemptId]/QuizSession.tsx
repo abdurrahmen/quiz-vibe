@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { QuizAttempt, Question } from '@/lib/types'
-import { Link } from 'lucide-react'
+import Link from 'next/link'
 
 export default function QuizSession({
   attempt,
