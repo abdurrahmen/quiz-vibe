@@ -127,6 +127,66 @@ export async function fetchBlitzQuestions(
   return { questions: shuffled }
 }
 
+/**
+ * Category Wars: record a player's category pick.
+ * When both players have picked, interleave questions and mark the duel ready.
+ */
+export async function setCategoryWarsPick(
+  duelId: string,
+  role: 'creator' | 'opponent',
+  categoryId: string
+) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const readyField = role === 'creator' ? 'creator_wars_ready' : 'opponent_wars_ready'
+  const categoryField = role === 'creator' ? 'creator_category_id' : 'opponent_category_id'
+
+  // Save the pick
+  const { error: updateErr } = await supabase
+    .from('duels')
+    .update({ [categoryField]: categoryId, [readyField]: true })
+    .eq('id', duelId)
+
+  if (updateErr) return { error: updateErr.message }
+
+  // Fetch the latest duel to check if both are ready
+  const { data: duel, error: fetchErr } = await supabase
+    .from('duels').select('*').eq('id', duelId).single()
+  if (fetchErr || !duel) return { error: 'Duel not found.' }
+
+  const bothReady = duel.creator_wars_ready && duel.opponent_wars_ready
+
+  if (bothReady) {
+    // Interleave questions: 5 from creator's category + 5 from opponent's
+    const [creatorQs, opponentQs] = await Promise.all([
+      supabase.from('questions').select('id').eq('category_id', duel.creator_category_id).limit(100),
+      supabase.from('questions').select('id').eq('category_id', duel.opponent_category_id).limit(100),
+    ])
+
+    const shuffle = (arr: { id: string }[]) => arr.sort(() => Math.random() - 0.5).slice(0, 5).map(q => q.id)
+    const creatorIds = shuffle(creatorQs.data || [])
+    const opponentIds = shuffle(opponentQs.data || [])
+
+    // Interleave: [c0, o0, c1, o1, c2, o2, c3, o3, c4, o4]
+    const interleaved: string[] = []
+    for (let i = 0; i < Math.max(creatorIds.length, opponentIds.length); i++) {
+      if (creatorIds[i]) interleaved.push(creatorIds[i])
+      if (opponentIds[i]) interleaved.push(opponentIds[i])
+    }
+
+    const { error: qUpdateErr } = await supabase
+      .from('duels')
+      .update({ question_ids: interleaved, status: 'playing', started_at: new Date().toISOString() })
+      .eq('id', duelId)
+
+    if (qUpdateErr) return { error: qUpdateErr.message }
+    return { success: true, bothReady: true }
+  }
+
+  return { success: true, bothReady: false }
+}
+
 export async function submitDuelResult(
   duelId: string,
   role: 'creator' | 'opponent',

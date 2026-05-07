@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import type { Duel, Question, DuelProgress } from '@/lib/types'
+import type { Duel, Question, DuelProgress, Category } from '@/lib/types'
 import { submitDuelResult } from '../actions'
 import DuelLobby from '@/components/duel/DuelLobby'
 import DuelCountdown from '@/components/duel/DuelCountdown'
@@ -10,25 +10,41 @@ import DuelBattle from '@/components/duel/DuelBattle'
 import DuelResults from '@/components/duel/DuelResults'
 import BlitzBattle from '@/components/duel/BlitzBattle'
 import BlitzResults from '@/components/duel/BlitzResults'
+import CategoryWarsSetup from '@/components/duel/CategoryWarsSetup'
+import CategoryWarsBattle from '@/components/duel/CategoryWarsBattle'
 
-type GameState = 'lobby' | 'countdown' | 'playing' | 'waiting_for_opponent' | 'results'
+type GameState =
+  | 'lobby'
+  | 'category_selection'
+  | 'countdown'
+  | 'playing'
+  | 'waiting_for_opponent'
+  | 'results'
 
 interface DuelClientProps {
   duel: Duel
   questions: Question[]
+  categories: Category[]
   myRole: 'creator' | 'opponent'
   myUsername: string
 }
 
-export default function DuelClient({ duel, questions, myRole, myUsername }: DuelClientProps) {
+export default function DuelClient({ duel, questions: initialQuestions, categories, myRole, myUsername }: DuelClientProps) {
   const isBlitz = duel.mode === 'blitz'
+  const isCategoryWars = duel.mode === 'category_wars'
 
-  const [gameState, setGameState] = useState<GameState>(
-    duel.status === 'playing' && duel.opponent_name ? 'countdown' : 'lobby'
-  )
-  const [opponentJoined, setOpponentJoined] = useState(
-    !!(duel.opponent_name && duel.status === 'playing')
-  )
+  // Determine initial game state
+  const getInitialState = (): GameState => {
+    if (duel.status === 'finished') return 'results'
+    if (duel.status === 'playing') {
+      if (isCategoryWars && (!duel.creator_wars_ready || !duel.opponent_wars_ready)) return 'category_selection'
+      return 'countdown'
+    }
+    return 'lobby'
+  }
+
+  const [gameState, setGameState] = useState<GameState>(getInitialState)
+  const [opponentJoined, setOpponentJoined] = useState(!!(duel.opponent_name && duel.status !== 'waiting'))
   const [myProgress, setMyProgress] = useState<DuelProgress>({ answered: 0, correct: 0 })
   const [opponentProgress, setOpponentProgress] = useState<DuelProgress>({ answered: 0, correct: 0 })
   const [myScore, setMyScore] = useState(0)
@@ -36,6 +52,15 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
   const [opponentFinalScore, setOpponentFinalScore] = useState<number | null>(null)
   const [opponentFinalTimeMs, setOpponentFinalTimeMs] = useState<number | null>(null)
   const [liveDuel, setLiveDuel] = useState<Duel>(duel)
+  const [liveQuestions, setLiveQuestions] = useState<Question[]>(initialQuestions)
+  // Category Wars readiness flags
+  const [myPickDone, setMyPickDone] = useState(
+    myRole === 'creator' ? duel.creator_wars_ready : duel.opponent_wars_ready
+  )
+  const [opponentPickDone, setOpponentPickDone] = useState(
+    myRole === 'creator' ? duel.opponent_wars_ready : duel.creator_wars_ready
+  )
+
   const startTimeRef = useRef<number | null>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const supabase = createClient()
@@ -52,21 +77,29 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     })
     channelRef.current = channel
 
-    // Presence: opponent joins lobby
+    // Presence: opponent enters the room
     channel.on('presence', { event: 'join' }, ({ key }) => {
       if (key !== myUsername) {
         setOpponentJoined(true)
-        setTimeout(() => setGameState(s => s === 'lobby' ? 'countdown' : s), 800)
+        setGameState(s => {
+          if (s === 'lobby') return isCategoryWars ? 'category_selection' : 'countdown'
+          return s
+        })
       }
     })
 
-    // Broadcast: opponent answered a question
+    // Broadcast: opponent answered
     channel.on('broadcast', { event: 'answered' }, ({ payload }) => {
       const { correct } = payload as { q_index: number; correct: boolean }
       setOpponentProgress(prev => ({
         answered: prev.answered + 1,
         correct: prev.correct + (correct ? 1 : 0),
       }))
+    })
+
+    // Broadcast: opponent signaled their category pick
+    channel.on('broadcast', { event: 'category_picked' }, () => {
+      setOpponentPickDone(true)
     })
 
     // Broadcast: opponent finished
@@ -77,13 +110,52 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
       setGameState(prev => prev === 'waiting_for_opponent' ? 'results' : prev)
     })
 
-    // DB Changes: watch for duel status = finished (fallback for reliability)
+    // DB changes: comprehensive fallback handler
     channel.on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'duels', filter: `id=eq.${duel.id}` },
-      (payload) => {
+      async (payload) => {
         const updated = payload.new as Duel
         setLiveDuel(updated)
+
+        // Opponent joined lobby
+        if (updated.status === 'playing' && updated.opponent_name && !isCategoryWars) {
+          setOpponentJoined(true)
+          setGameState(s => s === 'lobby' ? 'countdown' : s)
+        }
+
+        // Category Wars: update pick readiness flags
+        if (isCategoryWars) {
+          const creatorReady = updated.creator_wars_ready
+          const opponentReady = updated.opponent_wars_ready
+          if (myRole === 'creator') setOpponentPickDone(opponentReady)
+          else setOpponentPickDone(creatorReady)
+
+          // Opponent joined → go to category selection
+          if (updated.opponent_name) {
+            setOpponentJoined(true)
+            setGameState(s => s === 'lobby' ? 'category_selection' : s)
+          }
+
+          // Both picked → fetch fresh questions and start countdown
+          if (creatorReady && opponentReady && updated.question_ids?.length > 0) {
+            // Refresh questions from DB
+            const { data: qs } = await supabase
+              .from('questions')
+              .select('*')
+              .in('id', updated.question_ids)
+
+            if (qs) {
+              const ordered = updated.question_ids
+                .map((id: string) => qs.find(q => q.id === id))
+                .filter(Boolean) as Question[]
+              setLiveQuestions(ordered)
+            }
+            setGameState(s => s === 'category_selection' ? 'countdown' : s)
+          }
+        }
+
+        // Duel finished — pull results from DB
         if (updated.status === 'finished') {
           if (myRole === 'creator') {
             setOpponentFinalScore(updated.opponent_score)
@@ -94,20 +166,12 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
           }
           setGameState('results')
         }
-        if (updated.status === 'playing' && updated.opponent_name) {
-          setOpponentJoined(true)
-          setGameState(prev => prev === 'lobby' ? 'countdown' : prev)
-        }
       }
     )
 
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        await channel.track({
-          username: myUsername,
-          role: myRole,
-          online_at: new Date().toISOString(),
-        })
+        await channel.track({ username: myUsername, role: myRole, online_at: new Date().toISOString() })
       }
     })
 
@@ -116,7 +180,7 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [duel.id, duel.room_code, myUsername, myRole])
+  }, [duel.id, duel.room_code, myUsername, myRole, isCategoryWars])
 
   // ─── Handlers ───────────────────────────────────────────────────────
   const handleCountdownComplete = useCallback(() => {
@@ -124,78 +188,55 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     setGameState('playing')
   }, [])
 
-  // Standard mode: per-question answer tracking
-  const handleAnswer = useCallback((questionIndex: number, _selectedOption: number, isCorrect: boolean) => {
-    setMyProgress(prev => ({
-      answered: prev.answered + 1,
-      correct: prev.correct + (isCorrect ? 1 : 0),
-    }))
+  const handleAnswer = useCallback((questionIndex: number, _opt: number, isCorrect: boolean) => {
+    setMyProgress(prev => ({ answered: prev.answered + 1, correct: prev.correct + (isCorrect ? 1 : 0) }))
     if (isCorrect) setMyScore(prev => prev + 1)
-
-    channelRef.current?.send({
-      type: 'broadcast',
-      event: 'answered',
-      payload: { q_index: questionIndex, correct: isCorrect },
-    })
+    channelRef.current?.send({ type: 'broadcast', event: 'answered', payload: { q_index: questionIndex, correct: isCorrect } })
   }, [])
 
-  // Blitz mode: simplified answer event (score managed in BlitzBattle)
   const handleBlitzAnswer = useCallback((_idx: number, isCorrect: boolean) => {
-    channelRef.current?.send({
-      type: 'broadcast',
-      event: 'answered',
-      payload: { q_index: _idx, correct: isCorrect },
-    })
+    channelRef.current?.send({ type: 'broadcast', event: 'answered', payload: { q_index: _idx, correct: isCorrect } })
   }, [])
 
-  // Standard finish
   const handleFinished = useCallback(async () => {
     const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0
     setMyTimeMs(elapsed)
     setGameState('waiting_for_opponent')
-
-    channelRef.current?.send({
-      type: 'broadcast',
-      event: 'finished',
-      payload: { score: myScore, time_ms: elapsed },
-    })
-
+    channelRef.current?.send({ type: 'broadcast', event: 'finished', payload: { score: myScore, time_ms: elapsed } })
     await submitDuelResult(duel.id, myRole, myScore, elapsed)
-
-    setOpponentFinalScore(prev => {
-      if (prev !== null) setGameState('results')
-      return prev
-    })
+    setOpponentFinalScore(prev => { if (prev !== null) setGameState('results'); return prev })
   }, [duel.id, myRole, myScore])
 
-  // Blitz finish — score & time passed directly from BlitzBattle
   const handleBlitzFinished = useCallback(async (score: number, timeMs: number) => {
     setMyScore(score)
     setMyTimeMs(timeMs)
     setGameState('waiting_for_opponent')
-
-    channelRef.current?.send({
-      type: 'broadcast',
-      event: 'finished',
-      payload: { score, time_ms: timeMs },
-    })
-
+    channelRef.current?.send({ type: 'broadcast', event: 'finished', payload: { score, time_ms: timeMs } })
     await submitDuelResult(duel.id, myRole, score, timeMs)
-
-    setOpponentFinalScore(prev => {
-      if (prev !== null) setGameState('results')
-      return prev
-    })
+    setOpponentFinalScore(prev => { if (prev !== null) setGameState('results'); return prev })
   }, [duel.id, myRole])
 
-  // ─── Render State Machine ────────────────────────────────────────────
+  // Called from CategoryWarsSetup when this player locks in their pick
+  const handleCategoryPicked = useCallback(() => {
+    setMyPickDone(true)
+    channelRef.current?.send({ type: 'broadcast', event: 'category_picked', payload: { role: myRole } })
+  }, [myRole])
+
+  // ─── State Machine Render ────────────────────────────────────────────
   if (gameState === 'lobby') {
+    return <DuelLobby duel={liveDuel} myRole={myRole} myUsername={myUsername} opponentJoined={opponentJoined} />
+  }
+
+  if (gameState === 'category_selection') {
     return (
-      <DuelLobby
-        duel={liveDuel}
+      <CategoryWarsSetupWrapper
+        duelId={duel.id}
         myRole={myRole}
-        myUsername={myUsername}
-        opponentJoined={opponentJoined}
+        categories={categories}
+        opponentName={opponentName}
+        myPicked={myPickDone}
+        opponentPicked={opponentPickDone}
+        onPicked={handleCategoryPicked}
       />
     )
   }
@@ -218,9 +259,24 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
       )
     }
 
+    if (isCategoryWars) {
+      return (
+        <CategoryWarsBattle
+          duel={liveDuel}
+          questions={liveQuestions}
+          myUsername={myUsername}
+          opponentName={opponentName}
+          myProgress={myProgress}
+          opponentProgress={opponentProgress}
+          onAnswer={handleAnswer}
+          onFinished={handleFinished}
+        />
+      )
+    }
+
     return (
       <DuelBattle
-        questions={questions}
+        questions={liveQuestions}
         myUsername={myUsername}
         opponentName={opponentName}
         myProgress={myProgress}
@@ -260,4 +316,29 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
   }
 
   return null
+}
+
+// ── Thin wrapper that fires onPicked after the server action ──────────
+function CategoryWarsSetupWrapper({
+  duelId, myRole, categories, opponentName, myPicked, opponentPicked, onPicked,
+}: {
+  duelId: string
+  myRole: 'creator' | 'opponent'
+  categories: Category[]
+  opponentName: string
+  myPicked: boolean
+  opponentPicked: boolean
+  onPicked: () => void
+}) {
+  return (
+    <CategoryWarsSetup
+      duelId={duelId}
+      myRole={myRole}
+      categories={categories}
+      opponentName={opponentName}
+      myPicked={myPicked}
+      opponentPicked={opponentPicked}
+      onPicked={onPicked}
+    />
+  )
 }
