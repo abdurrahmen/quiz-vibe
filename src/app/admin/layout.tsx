@@ -58,7 +58,7 @@ export default function AdminLayout({
         <div className="flex items-center justify-between mb-10">
           <Link href="/admin/dashboard" className="text-xl font-black text-primary tracking-tight flex items-center gap-2">
             <span className="material-symbols-outlined filled text-primary">school</span>
-            QuizMaster
+            QuizVibe
           </Link>
           <button className="md:hidden text-slate-400 hover:text-primary" onClick={() => setMobileMenuOpen(false)}>
             <span className="material-symbols-outlined">close</span>

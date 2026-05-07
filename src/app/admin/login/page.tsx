@@ -18,7 +18,7 @@ export default function AdminLogin() {
           <div className="text-center mb-10 relative z-10">
             <Link href="/" className="inline-flex justify-center items-center gap-2 mb-4 hover:opacity-80 transition-opacity">
               <span className="material-symbols-outlined text-[36px] text-primary filled">school</span>
-              <h1 className="text-3xl font-extrabold text-on-surface text-gradient">QuizMaster Pro</h1>
+              <h1 className="text-3xl font-extrabold text-on-surface text-gradient">QuizVibe</h1>
             </Link>
             <p className="text-base text-on-surface-variant font-medium">Admin Login Portal</p>
           </div>
@@ -119,7 +119,7 @@ export default function AdminLogin() {
           {/* Footer */}
           <div className="mt-8 text-center relative z-10 border-t border-surface-variant pt-6">
             <p className="text-xs text-outline font-medium">
-              Protected by reCAPTCHA and subject to the QuizMaster Pro <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
+              Protected by reCAPTCHA and subject to the QuizVibe <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
             </p>
           </div>
         </div>

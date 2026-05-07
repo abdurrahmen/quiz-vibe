@@ -14,12 +14,12 @@ export default async function AdminQuestions() {
 
   const { data: categories } = await supabase
     .from('categories')
-    .select('id, name')
+    .select('*')
     .order('name')
 
   return (
     <main className="flex-1 p-6 md:p-8 flex flex-col gap-8">
-      <QuestionsClient initialQuestions={questions || []} categories={categories || []} />
+      <QuestionsClient initialQuestions={questions || []} categories={(categories as any) || []} />
     </main>
   )
 }

@@ -59,9 +59,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-80 border-b border-slate-100/80 shadow-ambient">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-extrabold tracking-tight text-gradient">
-            QuizMaster Pro
+        <div className="max-w-7xl mx-auto py-4 flex justify-between items-center">
+          <div className="text-2xl md:px-0 px-6 font-extrabold tracking-tight text-gradient">
+            QuizVibe
           </div>
 
           {/* Desktop nav */}
@@ -262,7 +262,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-14"
           >
-            <h2 className="text-4xl font-extrabold text-on-surface mb-4">Why Choose QuizMaster Pro</h2>
+            <h2 className="text-4xl font-extrabold text-on-surface mb-4">Why Choose QuizVibe</h2>
             <p className="text-lg text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
               Discover the tools you need to assess, learn, and grow effectively.
             </p>
@@ -445,13 +445,13 @@ export default function HomePage() {
         className="bg-surface-container-highest py-12 px-6"
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-xl font-extrabold text-gradient">QuizMaster Pro</div>
+          <div className="text-xl font-extrabold text-gradient">QuizVibe</div>
           <div className="flex gap-8 text-sm text-on-surface-variant font-medium">
             <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
             <Link href="/admin/login" className="hover:text-primary transition-colors">Admin</Link>
           </div>
-          <p className="text-sm text-on-surface-variant">© 2026 QuizMaster Pro. All rights reserved.</p>
+          <p className="text-sm text-on-surface-variant">© 2026 QuizVibe. All rights reserved.</p>
         </div>
       </motion.footer>
 
