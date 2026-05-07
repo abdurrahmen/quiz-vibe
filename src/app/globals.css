@@ -267,3 +267,19 @@ body {
 .timer-warning {
   animation: timerPulse 1s ease infinite;
 }
+
+/* Shimmer sweep for CTA buttons */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+
+/* Golden glow pulse for duel ⚡ icon */
+@keyframes goldenGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4)) drop-shadow(0 0 20px rgba(250, 204, 21, 0.15));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.7)) drop-shadow(0 0 40px rgba(250, 204, 21, 0.3));
+  }
+}

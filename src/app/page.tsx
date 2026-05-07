@@ -218,18 +218,6 @@ export default function HomePage() {
                 Start Quiz Now
               </button>
               <Link
-                href="/duel"
-                className="flex items-center gap-2 bg-yellow-400/90 text-yellow-900 px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-              >
-                ⚡ Challenge a Friend
-              </Link>
-              <Link
-                href="/tournament"
-                className="flex items-center gap-2 bg-white/15 border border-white/40 text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-white/25 hover:-translate-y-0.5 transition-all"
-              >
-                🏆 Tournaments
-              </Link>
-              <Link
                 href="#how-it-works"
                 className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-all"
               >
