@@ -67,12 +67,19 @@ export interface Duel {
   opponent_name: string | null
   category_id: string | null
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed'
+  mode: 'standard' | 'blitz' | 'category_wars'
   question_ids: string[]
   status: 'waiting' | 'playing' | 'finished'
   creator_score: number | null
   opponent_score: number | null
   creator_time_ms: number | null
   opponent_time_ms: number | null
+  creator_blitz_score: number
+  opponent_blitz_score: number
+  creator_category_id: string | null
+  opponent_category_id: string | null
+  creator_wars_ready: boolean
+  opponent_wars_ready: boolean
   winner_name: string | null
   created_at: string
   started_at: string | null

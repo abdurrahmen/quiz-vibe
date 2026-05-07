@@ -12,6 +12,7 @@ export default function DuelHubPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState('')
   const [isPending, setIsPending] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<'standard' | 'blitz' | 'category_wars'>('standard')
 
   useEffect(() => {
     const supabase = createClient()
@@ -164,36 +165,88 @@ export default function DuelHubPage() {
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none transition-all font-medium"
                     />
                   </div>
+
+                  {/* Mode Selector */}
                   <div>
-                    <label className="block text-sm font-semibold text-on-surface mb-2">Category</label>
-                    <select
-                      name="category_id"
-                      className="w-full appearance-none bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none cursor-pointer font-medium"
-                    >
-                      <option value="">🎲 Any Category</option>
-                      {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-on-surface mb-2">Difficulty</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {['mixed', 'easy', 'medium', 'hard'].map((d) => (
-                        <label key={d} className="cursor-pointer">
-                          <input type="radio" name="difficulty" value={d} defaultChecked={d === 'mixed'} className="sr-only peer" />
-                          <div className="text-center text-xs font-bold py-2.5 rounded-xl border-2 border-surface-variant peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-slate-500 hover:border-primary/50 transition-all capitalize">
-                            {d === 'mixed' ? '🎲' : d === 'easy' ? '🟢' : d === 'medium' ? '🟡' : '🔴'}<br />
-                            {d}
+                    <label className="block text-sm font-semibold text-on-surface mb-2">Game Mode</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'standard', emoji: '⚔️', label: 'Standard', desc: '10 questions' },
+                        { value: 'blitz', emoji: '⚡', label: 'Blitz', desc: '60 seconds' },
+                        { value: 'category_wars', emoji: '🏹', label: 'Cat. Wars', desc: 'Pick category' },
+                      ].map((m) => (
+                        <label key={m.value} className="cursor-pointer">
+                          <input
+                            type="radio"
+                            name="mode"
+                            value={m.value}
+                            defaultChecked={m.value === 'standard'}
+                            className="sr-only peer"
+                            onChange={() => setSelectedMode(m.value as 'standard' | 'blitz' | 'category_wars')}
+                          />
+                          <div className="text-center text-xs font-bold py-3 px-1 rounded-xl border-2 border-surface-variant peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-slate-500 hover:border-primary/50 transition-all">
+                            <div className="text-lg mb-0.5">{m.emoji}</div>
+                            <div>{m.label}</div>
+                            <div className="text-[10px] font-medium opacity-70 mt-0.5">{m.desc}</div>
                           </div>
                         </label>
                       ))}
                     </div>
                   </div>
+
+                  {/* Category — hidden in blitz */}
+                  {selectedMode !== 'blitz' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-on-surface mb-2">Category</label>
+                      <select
+                        name="category_id"
+                        className="w-full appearance-none bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none cursor-pointer font-medium"
+                      >
+                        <option value="">🎲 Any Category</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Difficulty — hidden in blitz */}
+                  {selectedMode !== 'blitz' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-on-surface mb-2">Difficulty</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {['mixed', 'easy', 'medium', 'hard'].map((d) => (
+                          <label key={d} className="cursor-pointer">
+                            <input type="radio" name="difficulty" value={d} defaultChecked={d === 'mixed'} className="sr-only peer" />
+                            <div className="text-center text-xs font-bold py-2.5 rounded-xl border-2 border-surface-variant peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-slate-500 hover:border-primary/50 transition-all capitalize">
+                              {d === 'mixed' ? '🎲' : d === 'easy' ? '🟢' : d === 'medium' ? '🟡' : '🔴'}<br />
+                              {d}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Blitz info banner */}
+                  {selectedMode === 'blitz' && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm">
+                      <p className="font-bold text-yellow-700 flex items-center gap-1.5 mb-1">
+                        <span className="material-symbols-outlined text-base">bolt</span>
+                        Blitz Mode — 60 Seconds
+                      </p>
+                      <p className="text-yellow-600">Answer as many questions as you can. No question limit — the stream is infinite! Winner = most correct answers.</p>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full bg-linear-to-r from-primary to-tertiary text-white font-bold py-4 rounded-xl shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-2"
+                    className={`w-full text-white font-bold py-4 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-2 hover:-translate-y-0.5 ${
+                      selectedMode === 'blitz'
+                        ? 'bg-linear-to-r from-yellow-500 to-orange-500 shadow-md hover:shadow-lg'
+                        : 'bg-linear-to-r from-primary to-tertiary shadow-primary hover:shadow-primary-lg'
+                    }`}
                   >
                     {isPending ? (
                       <>
@@ -203,7 +256,7 @@ export default function DuelHubPage() {
                     ) : (
                       <>
                         <span className="material-symbols-outlined">add_circle</span>
-                        Create Duel Room
+                        Create {selectedMode === 'blitz' ? 'Blitz' : selectedMode === 'category_wars' ? 'Cat. Wars' : 'Duel'} Room
                       </>
                     )}
                   </button>

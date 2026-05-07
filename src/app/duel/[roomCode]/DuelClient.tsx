@@ -8,6 +8,8 @@ import DuelLobby from '@/components/duel/DuelLobby'
 import DuelCountdown from '@/components/duel/DuelCountdown'
 import DuelBattle from '@/components/duel/DuelBattle'
 import DuelResults from '@/components/duel/DuelResults'
+import BlitzBattle from '@/components/duel/BlitzBattle'
+import BlitzResults from '@/components/duel/BlitzResults'
 
 type GameState = 'lobby' | 'countdown' | 'playing' | 'waiting_for_opponent' | 'results'
 
@@ -19,8 +21,9 @@ interface DuelClientProps {
 }
 
 export default function DuelClient({ duel, questions, myRole, myUsername }: DuelClientProps) {
+  const isBlitz = duel.mode === 'blitz'
+
   const [gameState, setGameState] = useState<GameState>(
-    // If opponent already joined (e.g. page refresh), skip lobby
     duel.status === 'playing' && duel.opponent_name ? 'countdown' : 'lobby'
   )
   const [opponentJoined, setOpponentJoined] = useState(
@@ -41,7 +44,7 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     ? (liveDuel.opponent_name ?? 'Opponent')
     : liveDuel.creator_name
 
-  // ─── Realtime Setup ───────────────────────────────────────────────
+  // ─── Realtime Setup ─────────────────────────────────────────────────
   useEffect(() => {
     const channelName = `duel:${duel.room_code}`
     const channel = supabase.channel(channelName, {
@@ -49,22 +52,15 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     })
     channelRef.current = channel
 
-    // ── Presence: detect when opponent joins ──
-    channel.on('presence', { event: 'join' }, ({ key, newPresences }) => {
+    // Presence: opponent joins lobby
+    channel.on('presence', { event: 'join' }, ({ key }) => {
       if (key !== myUsername) {
-        // Opponent joined!
         setOpponentJoined(true)
-        if (gameState === 'lobby') {
-          setTimeout(() => setGameState('countdown'), 800) // small delay for "Joined!" banner
-        }
+        setTimeout(() => setGameState(s => s === 'lobby' ? 'countdown' : s), 800)
       }
     })
 
-    channel.on('presence', { event: 'leave' }, ({ key }) => {
-      // Could handle disconnection here
-    })
-
-    // ── Broadcast: receive opponent's answer events ──
+    // Broadcast: opponent answered a question
     channel.on('broadcast', { event: 'answered' }, ({ payload }) => {
       const { correct } = payload as { q_index: number; correct: boolean }
       setOpponentProgress(prev => ({
@@ -73,17 +69,15 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
       }))
     })
 
-    // ── Broadcast: opponent finished ──
+    // Broadcast: opponent finished
     channel.on('broadcast', { event: 'finished' }, ({ payload }) => {
       const { score, time_ms } = payload as { score: number; time_ms: number }
       setOpponentFinalScore(score)
       setOpponentFinalTimeMs(time_ms)
-      setGameState(prev =>
-        prev === 'waiting_for_opponent' ? 'results' : prev
-      )
+      setGameState(prev => prev === 'waiting_for_opponent' ? 'results' : prev)
     })
 
-    // ── DB Changes: watch for duel status update (results) ──
+    // DB Changes: watch for duel status = finished (fallback for reliability)
     channel.on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'duels', filter: `id=eq.${duel.id}` },
@@ -91,7 +85,6 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
         const updated = payload.new as Duel
         setLiveDuel(updated)
         if (updated.status === 'finished') {
-          // Set opponent scores from DB for reliability
           if (myRole === 'creator') {
             setOpponentFinalScore(updated.opponent_score)
             setOpponentFinalTimeMs(updated.opponent_time_ms)
@@ -108,7 +101,6 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
       }
     )
 
-    // Subscribe and announce presence
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         await channel.track({
@@ -126,21 +118,20 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duel.id, duel.room_code, myUsername, myRole])
 
-  // ─── Handlers ─────────────────────────────────────────────────────
+  // ─── Handlers ───────────────────────────────────────────────────────
   const handleCountdownComplete = useCallback(() => {
     startTimeRef.current = Date.now()
     setGameState('playing')
   }, [])
 
+  // Standard mode: per-question answer tracking
   const handleAnswer = useCallback((questionIndex: number, _selectedOption: number, isCorrect: boolean) => {
-    // Update my own progress
     setMyProgress(prev => ({
       answered: prev.answered + 1,
       correct: prev.correct + (isCorrect ? 1 : 0),
     }))
     if (isCorrect) setMyScore(prev => prev + 1)
 
-    // Broadcast to opponent
     channelRef.current?.send({
       type: 'broadcast',
       event: 'answered',
@@ -148,31 +139,56 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
     })
   }, [])
 
+  // Blitz mode: simplified answer event (score managed in BlitzBattle)
+  const handleBlitzAnswer = useCallback((_idx: number, isCorrect: boolean) => {
+    channelRef.current?.send({
+      type: 'broadcast',
+      event: 'answered',
+      payload: { q_index: _idx, correct: isCorrect },
+    })
+  }, [])
+
+  // Standard finish
   const handleFinished = useCallback(async () => {
     const elapsed = startTimeRef.current ? Date.now() - startTimeRef.current : 0
     setMyTimeMs(elapsed)
-
-    // Transition state
     setGameState('waiting_for_opponent')
 
-    // Broadcast to opponent
     channelRef.current?.send({
       type: 'broadcast',
       event: 'finished',
       payload: { score: myScore, time_ms: elapsed },
     })
 
-    // Persist to DB
     await submitDuelResult(duel.id, myRole, myScore, elapsed)
 
-    // If opponent already finished (we received their broadcast), go to results
     setOpponentFinalScore(prev => {
       if (prev !== null) setGameState('results')
       return prev
     })
   }, [duel.id, myRole, myScore])
 
-  // ─── Render State Machine ──────────────────────────────────────────
+  // Blitz finish — score & time passed directly from BlitzBattle
+  const handleBlitzFinished = useCallback(async (score: number, timeMs: number) => {
+    setMyScore(score)
+    setMyTimeMs(timeMs)
+    setGameState('waiting_for_opponent')
+
+    channelRef.current?.send({
+      type: 'broadcast',
+      event: 'finished',
+      payload: { score, time_ms: timeMs },
+    })
+
+    await submitDuelResult(duel.id, myRole, score, timeMs)
+
+    setOpponentFinalScore(prev => {
+      if (prev !== null) setGameState('results')
+      return prev
+    })
+  }, [duel.id, myRole])
+
+  // ─── Render State Machine ────────────────────────────────────────────
   if (gameState === 'lobby') {
     return (
       <DuelLobby
@@ -189,6 +205,19 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
   }
 
   if (gameState === 'playing') {
+    if (isBlitz) {
+      return (
+        <BlitzBattle
+          duel={liveDuel}
+          myUsername={myUsername}
+          opponentName={opponentName}
+          opponentProgress={opponentProgress}
+          onAnswer={handleBlitzAnswer}
+          onFinished={handleBlitzFinished}
+        />
+      )
+    }
+
     return (
       <DuelBattle
         questions={questions}
@@ -203,6 +232,19 @@ export default function DuelClient({ duel, questions, myRole, myUsername }: Duel
   }
 
   if (gameState === 'waiting_for_opponent' || gameState === 'results') {
+    if (isBlitz) {
+      return (
+        <BlitzResults
+          duel={liveDuel}
+          myRole={myRole}
+          myUsername={myUsername}
+          myScore={myScore}
+          opponentScore={opponentFinalScore}
+          waitingForOpponent={gameState === 'waiting_for_opponent'}
+        />
+      )
+    }
+
     return (
       <DuelResults
         duel={liveDuel}

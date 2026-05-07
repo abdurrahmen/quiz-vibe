@@ -21,41 +21,35 @@ export async function createDuel(formData: FormData) {
   const creatorName = formData.get('creator_name') as string
   const categoryId = formData.get('category_id') as string || null
   const difficulty = formData.get('difficulty') as string || 'mixed'
+  const mode = (formData.get('mode') as string) || 'standard'
 
   if (!creatorName?.trim()) {
     return { error: 'Please enter your username.' }
   }
 
-  // Fetch 10 random question IDs matching the filters
-  let query = supabase
-    .from('questions')
-    .select('id')
+  let selectedIds: string[] = []
 
-  if (categoryId) {
-    query = query.eq('category_id', categoryId)
-  }
-  if (difficulty !== 'mixed') {
-    query = query.eq('difficulty', difficulty)
-  }
+  // Blitz uses a dynamic infinite stream — no pre-selected questions needed
+  if (mode !== 'blitz') {
+    let query = supabase.from('questions').select('id')
+    if (categoryId) query = query.eq('category_id', categoryId)
+    if (difficulty !== 'mixed') query = query.eq('difficulty', difficulty)
 
-  const { data: allQuestions, error: qErr } = await query
-  if (qErr || !allQuestions || allQuestions.length < 5) {
-    return { error: 'Not enough questions found for these filters. Try "Mixed" difficulty or a different category.' }
-  }
+    const { data: allQuestions, error: qErr } = await query
+    if (qErr || !allQuestions || allQuestions.length < 5) {
+      return { error: 'Not enough questions found for these filters. Try "Mixed" difficulty or a different category.' }
+    }
 
-  // Randomly sample 10 (or fewer if not enough)
-  const shuffled = allQuestions.sort(() => Math.random() - 0.5)
-  const selectedIds = shuffled.slice(0, Math.min(10, shuffled.length)).map(q => q.id)
+    const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+    selectedIds = shuffled.slice(0, Math.min(10, shuffled.length)).map(q => q.id)
+  }
 
   // Generate unique room code
   let roomCode = generateRoomCode()
   let attempts = 0
   while (attempts < 10) {
     const { data: existing } = await supabase
-      .from('duels')
-      .select('id')
-      .eq('room_code', roomCode)
-      .single()
+      .from('duels').select('id').eq('room_code', roomCode).single()
     if (!existing) break
     roomCode = generateRoomCode()
     attempts++
@@ -68,6 +62,7 @@ export async function createDuel(formData: FormData) {
       creator_name: creatorName.trim(),
       category_id: categoryId,
       difficulty,
+      mode,
       question_ids: selectedIds,
       status: 'waiting',
     }])
@@ -109,6 +104,27 @@ export async function joinDuel(formData: FormData) {
   if (updateErr) return { error: updateErr.message }
 
   redirect(`/duel/${roomCode}?role=opponent&username=${encodeURIComponent(opponentName.trim())}`)
+}
+
+export async function fetchBlitzQuestions(
+  categoryId: string | null,
+  difficulty: string,
+  excludeIds: string[]
+) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  let query = supabase.from('questions').select('id, question_text, type, options, correct_answers, explanation, points, difficulty')
+
+  if (categoryId) query = query.eq('category_id', categoryId)
+  if (difficulty !== 'mixed') query = query.eq('difficulty', difficulty)
+  if (excludeIds.length > 0) query = query.not('id', 'in', `(${excludeIds.join(',')})`)
+
+  const { data, error } = await query.limit(200)
+  if (error || !data) return { error: error?.message || 'Failed to load questions', questions: [] }
+
+  const shuffled = data.sort(() => Math.random() - 0.5).slice(0, 30)
+  return { questions: shuffled }
 }
 
 export async function submitDuelResult(
