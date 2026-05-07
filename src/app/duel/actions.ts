@@ -21,41 +21,35 @@ export async function createDuel(formData: FormData) {
   const creatorName = formData.get('creator_name') as string
   const categoryId = formData.get('category_id') as string || null
   const difficulty = formData.get('difficulty') as string || 'mixed'
+  const mode = (formData.get('mode') as string) || 'standard'
 
   if (!creatorName?.trim()) {
     return { error: 'Please enter your username.' }
   }
 
-  // Fetch 10 random question IDs matching the filters
-  let query = supabase
-    .from('questions')
-    .select('id')
+  let selectedIds: string[] = []
 
-  if (categoryId) {
-    query = query.eq('category_id', categoryId)
-  }
-  if (difficulty !== 'mixed') {
-    query = query.eq('difficulty', difficulty)
-  }
+  // Blitz uses a dynamic infinite stream — no pre-selected questions needed
+  if (mode !== 'blitz') {
+    let query = supabase.from('questions').select('id')
+    if (categoryId) query = query.eq('category_id', categoryId)
+    if (difficulty !== 'mixed') query = query.eq('difficulty', difficulty)
 
-  const { data: allQuestions, error: qErr } = await query
-  if (qErr || !allQuestions || allQuestions.length < 5) {
-    return { error: 'Not enough questions found for these filters. Try "Mixed" difficulty or a different category.' }
-  }
+    const { data: allQuestions, error: qErr } = await query
+    if (qErr || !allQuestions || allQuestions.length < 5) {
+      return { error: 'Not enough questions found for these filters. Try "Mixed" difficulty or a different category.' }
+    }
 
-  // Randomly sample 10 (or fewer if not enough)
-  const shuffled = allQuestions.sort(() => Math.random() - 0.5)
-  const selectedIds = shuffled.slice(0, Math.min(10, shuffled.length)).map(q => q.id)
+    const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+    selectedIds = shuffled.slice(0, Math.min(10, shuffled.length)).map(q => q.id)
+  }
 
   // Generate unique room code
   let roomCode = generateRoomCode()
   let attempts = 0
   while (attempts < 10) {
     const { data: existing } = await supabase
-      .from('duels')
-      .select('id')
-      .eq('room_code', roomCode)
-      .single()
+      .from('duels').select('id').eq('room_code', roomCode).single()
     if (!existing) break
     roomCode = generateRoomCode()
     attempts++
@@ -68,6 +62,7 @@ export async function createDuel(formData: FormData) {
       creator_name: creatorName.trim(),
       category_id: categoryId,
       difficulty,
+      mode,
       question_ids: selectedIds,
       status: 'waiting',
     }])
@@ -109,6 +104,87 @@ export async function joinDuel(formData: FormData) {
   if (updateErr) return { error: updateErr.message }
 
   redirect(`/duel/${roomCode}?role=opponent&username=${encodeURIComponent(opponentName.trim())}`)
+}
+
+export async function fetchBlitzQuestions(
+  categoryId: string | null,
+  difficulty: string,
+  excludeIds: string[]
+) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  let query = supabase.from('questions').select('id, question_text, type, options, correct_answers, explanation, points, difficulty')
+
+  if (categoryId) query = query.eq('category_id', categoryId)
+  if (difficulty !== 'mixed') query = query.eq('difficulty', difficulty)
+  if (excludeIds.length > 0) query = query.not('id', 'in', `(${excludeIds.join(',')})`)
+
+  const { data, error } = await query.limit(200)
+  if (error || !data) return { error: error?.message || 'Failed to load questions', questions: [] }
+
+  const shuffled = data.sort(() => Math.random() - 0.5).slice(0, 30)
+  return { questions: shuffled }
+}
+
+/**
+ * Category Wars: record a player's category pick.
+ * When both players have picked, interleave questions and mark the duel ready.
+ */
+export async function setCategoryWarsPick(
+  duelId: string,
+  role: 'creator' | 'opponent',
+  categoryId: string
+) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const readyField = role === 'creator' ? 'creator_wars_ready' : 'opponent_wars_ready'
+  const categoryField = role === 'creator' ? 'creator_category_id' : 'opponent_category_id'
+
+  // Save the pick
+  const { error: updateErr } = await supabase
+    .from('duels')
+    .update({ [categoryField]: categoryId, [readyField]: true })
+    .eq('id', duelId)
+
+  if (updateErr) return { error: updateErr.message }
+
+  // Fetch the latest duel to check if both are ready
+  const { data: duel, error: fetchErr } = await supabase
+    .from('duels').select('*').eq('id', duelId).single()
+  if (fetchErr || !duel) return { error: 'Duel not found.' }
+
+  const bothReady = duel.creator_wars_ready && duel.opponent_wars_ready
+
+  if (bothReady) {
+    // Interleave questions: 5 from creator's category + 5 from opponent's
+    const [creatorQs, opponentQs] = await Promise.all([
+      supabase.from('questions').select('id').eq('category_id', duel.creator_category_id).limit(100),
+      supabase.from('questions').select('id').eq('category_id', duel.opponent_category_id).limit(100),
+    ])
+
+    const shuffle = (arr: { id: string }[]) => arr.sort(() => Math.random() - 0.5).slice(0, 5).map(q => q.id)
+    const creatorIds = shuffle(creatorQs.data || [])
+    const opponentIds = shuffle(opponentQs.data || [])
+
+    // Interleave: [c0, o0, c1, o1, c2, o2, c3, o3, c4, o4]
+    const interleaved: string[] = []
+    for (let i = 0; i < Math.max(creatorIds.length, opponentIds.length); i++) {
+      if (creatorIds[i]) interleaved.push(creatorIds[i])
+      if (opponentIds[i]) interleaved.push(opponentIds[i])
+    }
+
+    const { error: qUpdateErr } = await supabase
+      .from('duels')
+      .update({ question_ids: interleaved, status: 'playing', started_at: new Date().toISOString() })
+      .eq('id', duelId)
+
+    if (qUpdateErr) return { error: qUpdateErr.message }
+    return { success: true, bothReady: true }
+  }
+
+  return { success: true, bothReady: false }
 }
 
 export async function submitDuelResult(

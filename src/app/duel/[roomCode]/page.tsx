@@ -29,21 +29,35 @@ export default async function DuelRoomPage({
 
   if (error || !duel) notFound()
 
-  // Fetch the actual question objects (in the order stored)
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('*')
-    .in('id', duel.question_ids)
+  // Fetch categories (needed for Category Wars setup)
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('id, name, icon, color, question_count:questions(count)')
+    .order('name')
 
-  // Sort questions according to the stored order
-  const orderedQuestions = duel.question_ids
-    .map((id: string) => questions?.find((q) => q.id === id))
-    .filter(Boolean)
+  // Fetch the actual question objects (in the order stored)
+  let orderedQuestions: object[] = []
+  if (duel.question_ids && duel.question_ids.length > 0) {
+    const { data: questions } = await supabase
+      .from('questions')
+      .select('*')
+      .in('id', duel.question_ids)
+
+    orderedQuestions = duel.question_ids
+      .map((id: string) => questions?.find((q) => q.id === id))
+      .filter(Boolean)
+  }
 
   return (
     <DuelClient
       duel={duel}
-      questions={orderedQuestions}
+      questions={orderedQuestions as Parameters<typeof DuelClient>[0]['questions']}
+      categories={(categories || []).map(c => ({
+        ...c,
+        description: null,
+        created_at: '',
+        question_count: Array.isArray(c.question_count) ? (c.question_count[0] as { count: number })?.count ?? 0 : 0,
+      }))}
       myRole={role as 'creator' | 'opponent'}
       myUsername={decodeURIComponent(username)}
     />

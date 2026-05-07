@@ -41,6 +41,7 @@ export default function AdminLayout({
     { href: '/admin/questions', icon: 'quiz', label: 'Questions' },
     { href: '/admin/categories', icon: 'category', label: 'Categories' },
     { href: '/admin/quiz-requests', icon: 'request_quote', label: 'Quiz Requests', badge: pendingCount },
+    { href: '/admin/tournaments', icon: 'emoji_events', label: 'Tournaments' },
   ]
 
   return (
