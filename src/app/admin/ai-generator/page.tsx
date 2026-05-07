@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Category } from '@/lib/types'
 import { generateQuestions, createCategoryAction } from './actions'
@@ -25,6 +25,7 @@ function AIGenerator() {
   const [generating, setGenerating] = useState(false)
 
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   // Form State — initialized from URL search params (from quiz request accept flow)
   const [topic, setTopic] = useState(searchParams.get('topic') || '')
@@ -95,12 +96,15 @@ function AIGenerator() {
         setNewCatIcon('category')
         setNewCatColor('#4d41df')
         
-        // Remove newCategory from url so it doesn't pop up again on refresh
-        if (searchParams.has('newCategory')) {
-          const params = new URLSearchParams(searchParams.toString())
+        // Update URL via router to ensure Next.js state stays in sync
+        const params = new URLSearchParams(searchParams.toString())
+        if (params.has('newCategory')) {
           params.delete('newCategory')
-          window.history.replaceState(null, '', `?${params.toString()}`)
         }
+        // Set the newly created category in the URL params so that server revalidations 
+        // don't overwrite our local state with an empty ID!
+        params.set('category', data.id)
+        router.replace(`?${params.toString()}`, { scroll: false })
       }
     } catch (err: any) {
       alert(err.message || 'Failed to create category')
