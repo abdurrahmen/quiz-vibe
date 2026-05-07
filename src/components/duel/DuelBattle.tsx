@@ -114,11 +114,10 @@ export default function DuelBattle({
             {questions.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i < currentIndex ? 'w-6 bg-primary' :
+                className={`h-1.5 rounded-full transition-all duration-300 ${i < currentIndex ? 'w-6 bg-primary' :
                   i === currentIndex ? 'w-8 bg-primary' :
-                  'w-3 bg-surface-container-high'
-                }`}
+                    'w-3 bg-surface-container-high'
+                  }`}
               />
             ))}
           </div>
@@ -134,7 +133,7 @@ export default function DuelBattle({
               {/* Question Card */}
               <div className="bg-white rounded-2xl shadow-ambient border border-slate-100 p-6 md:p-8 mb-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-tertiary flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-tertiary flex items-center justify-center text-white font-black text-sm shrink-0">
                     {currentIndex + 1}
                   </div>
                   <p className="text-lg md:text-xl font-bold text-on-surface leading-relaxed">
@@ -153,7 +152,7 @@ export default function DuelBattle({
                     onClick={() => handleSelect(idx)}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 ${getOptionClass(idx)}`}
                   >
-                    <span className="w-8 h-8 rounded-full border-2 border-current flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    <span className="w-8 h-8 rounded-full border-2 border-current flex items-center justify-center text-sm font-bold shrink-0">
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <span className="font-medium">{option}</span>

@@ -28,7 +28,7 @@ function PlayerBar({
 
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${isMe ? 'bg-primary' : 'bg-secondary'}`}>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 ${isMe ? 'bg-primary' : 'bg-secondary'}`}>
         {username.slice(0, 2).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
@@ -36,7 +36,7 @@ function PlayerBar({
           <span className={`text-xs font-bold truncate ${isMe ? 'text-primary' : 'text-secondary'}`}>
             {username} {isMe && '(You)'}
           </span>
-          <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+          <div className="flex items-center gap-2 ml-2 shrink-0">
             <span className="text-xs font-bold text-green-600 flex items-center gap-0.5">
               <span className="material-symbols-outlined text-[14px]">check_circle</span>
               {progress.correct}
