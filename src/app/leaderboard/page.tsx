@@ -6,9 +6,9 @@ import Link from 'next/link'
 function RankBadge({ rank }: { rank: number }) {
   const cls =
     rank === 1 ? 'bg-yellow-400 text-white' :
-    rank === 2 ? 'bg-slate-400 text-white' :
-    rank === 3 ? 'bg-orange-400 text-white' :
-    'bg-surface-container-high text-outline'
+      rank === 2 ? 'bg-slate-400 text-white' :
+        rank === 3 ? 'bg-orange-400 text-white' :
+          'bg-surface-container-high text-outline'
   const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : String(rank)
   return (
     <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm ${cls}`}>
@@ -146,6 +146,12 @@ export default async function LeaderboardPage() {
   const tournamentLeaderboard = [...tMap.values()]
     .sort((a, b) => b.championships - a.championships || b.wins - a.wins)
     .slice(0, 10)
+
+  function formatTime(seconds: number): string {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
 
   return (
     <div className="min-h-screen bg-background">
