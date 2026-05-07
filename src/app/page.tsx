@@ -10,6 +10,38 @@ import RequestQuizModal from '@/components/RequestQuizModal'
 import { Wrapper3D } from '@/components/ui/3d-wrapper'
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
+
+const FLOATING_ICONS = [
+  // Left side
+  { id: 1, icon: 'psychology', top: 15, left: 10, size: 48, rot: -15, dur: 4.5, delay: 0, mobile: true },
+  { id: 2, icon: 'menu_book', top: 35, left: 5, size: 36, rot: 25, dur: 5.2, delay: 0.5, mobile: false },
+  { id: 3, icon: 'help', top: 60, left: 12, size: 40, rot: -20, dur: 3.8, delay: 1.2, mobile: true },
+  { id: 4, icon: 'lightbulb', top: 80, left: 8, size: 55, rot: 10, dur: 6.0, delay: 0.8, mobile: true },
+  { id: 5, icon: 'star', top: 25, left: 22, size: 28, rot: 30, dur: 4.0, delay: 2.1, mobile: false },
+  { id: 6, icon: 'ads_click', top: 75, left: 28, size: 45, rot: -5, dur: 5.5, delay: 1.5, mobile: false },
+  { id: 7, icon: 'edit', top: 45, left: 18, size: 32, rot: -25, dur: 4.2, delay: 0.3, mobile: true },
+  { id: 8, icon: 'science', top: 90, left: 20, size: 50, rot: 15, dur: 6.5, delay: 1.9, mobile: false },
+  { id: 9, icon: 'bolt', top: 10, left: 30, size: 38, rot: -10, dur: 3.5, delay: 2.5, mobile: true },
+  { id: 10, icon: 'school', top: 55, left: 35, size: 60, rot: 20, dur: 7.0, delay: 0.7, mobile: false },
+  
+  // Right side
+  { id: 11, icon: 'emoji_events', top: 18, left: 85, size: 55, rot: 15, dur: 5.8, delay: 0.2, mobile: true },
+  { id: 12, icon: 'bar_chart', top: 40, left: 92, size: 42, rot: -15, dur: 4.6, delay: 1.1, mobile: false },
+  { id: 13, icon: 'menu_book', top: 65, left: 88, size: 35, rot: 20, dur: 3.9, delay: 2.2, mobile: true },
+  { id: 14, icon: 'lightbulb', top: 85, left: 82, size: 48, rot: -25, dur: 6.2, delay: 0.9, mobile: true },
+  { id: 15, icon: 'psychology', top: 28, left: 75, size: 50, rot: -10, dur: 5.0, delay: 1.7, mobile: false },
+  { id: 16, icon: 'help', top: 52, left: 78, size: 30, rot: 30, dur: 4.3, delay: 0.4, mobile: true },
+  { id: 17, icon: 'star', top: 78, left: 68, size: 25, rot: -30, dur: 3.6, delay: 2.8, mobile: false },
+  { id: 18, icon: 'science', top: 12, left: 65, size: 44, rot: 25, dur: 5.5, delay: 1.3, mobile: true },
+  { id: 19, icon: 'edit', top: 92, left: 72, size: 36, rot: 5, dur: 4.8, delay: 0.6, mobile: false },
+  { id: 20, icon: 'school', top: 38, left: 62, size: 52, rot: -20, dur: 6.8, delay: 1.5, mobile: false },
+  
+  // Center-ish top/bottom
+  { id: 21, icon: 'bolt', top: 5, left: 50, size: 34, rot: 10, dur: 4.1, delay: 2.0, mobile: true },
+  { id: 22, icon: 'ads_click', top: 95, left: 45, size: 40, rot: -15, dur: 5.3, delay: 0.5, mobile: false },
+  { id: 23, icon: 'star', top: 8, left: 75, size: 22, rot: 45, dur: 3.2, delay: 1.8, mobile: false },
+]
+
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [stats, setStats] = useState({ questions: 0, categories: 0, attempts: 0 })
@@ -136,7 +168,34 @@ export default function HomePage() {
         containerClassName="h-auto w-full relative rounded-b-[3rem] md:rounded-b-[4rem]"
         className="relative z-50 pt-24 pb-28 px-6"
       >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
+        {/* Floating Decorative Icons */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[0]" aria-hidden="true">
+          {FLOATING_ICONS.map((icon) => (
+            <div
+              key={icon.id}
+              className={`absolute ${icon.mobile ? 'block' : 'hidden md:block'}`}
+              style={{
+                top: `${icon.top}%`,
+                left: `${icon.left}%`,
+                animation: `float-pulse-icon ${icon.dur}s ease-in-out infinite`,
+                animationDelay: `${icon.delay}s`,
+              }}
+            >
+              <span
+                className="material-symbols-outlined text-white"
+                style={{
+                  fontSize: `${icon.size}px`,
+                  transform: `rotate(${icon.rot}deg)`,
+                  display: 'block'
+                }}
+              >
+                {icon.icon}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
           <div className="flex flex-col gap-6">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium w-fit">
               <span className="material-symbols-outlined text-base">auto_awesome</span>
