@@ -12,7 +12,8 @@ function generateRoomCode(): string {
   return code
 }
 
-async function getUniqueRoomCode(supabase: ReturnType<ReturnType<typeof createClient> extends Promise<infer T> ? never : typeof createClient>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getUniqueRoomCode(supabase: any): Promise<string> {
   let roomCode = generateRoomCode()
   for (let i = 0; i < 10; i++) {
     const { data } = await supabase.from('duels').select('id').eq('room_code', roomCode).single()
@@ -108,7 +109,7 @@ export async function startTournament(tournamentId: string) {
     const p2 = shuffled[n - 1 - i]
 
     // Create a duel room for each match
-    const roomCode = await getUniqueRoomCode(supabase as ReturnType<typeof createClient>)
+    const roomCode = await getUniqueRoomCode(supabase)
 
     const { data: duel } = await supabase.from('duels').insert([{
       room_code: roomCode,
@@ -156,9 +157,22 @@ export async function reportMatchResult(matchId: string, winnerName: string) {
 
   if (matchErr || !match) return { error: 'Match not found.' }
 
-  // Increment winner's win count
+  // Fetch the parent tournament (needed for mode/difficulty when creating next-round duels)
+  const { data: tournament } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('id', match.tournament_id)
+    .single()
+
+  // Increment winner's win count (read current wins, then write +1)
+  const { data: winnerPlayer } = await supabase
+    .from('tournament_players')
+    .select('wins')
+    .eq('tournament_id', match.tournament_id)
+    .eq('username', winnerName)
+    .single()
   await supabase.from('tournament_players')
-    .update({ wins: supabase.rpc('increment', { x: 1 }) as unknown as number })
+    .update({ wins: (winnerPlayer?.wins ?? 0) + 1 })
     .eq('tournament_id', match.tournament_id)
     .eq('username', winnerName)
 
@@ -203,7 +217,7 @@ export async function reportMatchResult(matchId: string, winnerName: string) {
         const p1 = winners[i]
         const p2 = winners[i + 1] ?? null
 
-        const roomCode = p2 ? await getUniqueRoomCode(supabase as ReturnType<typeof createClient>) : null
+        const roomCode = p2 ? await getUniqueRoomCode(supabase) : null
         let duelId = null
 
         if (p2 && roomCode) {
