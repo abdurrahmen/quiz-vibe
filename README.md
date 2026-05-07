@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 QuizVibe
 
-## Getting Started
+**A full-stack competitive quiz platform with real-time PvP duels, live tournaments, and AI-powered question generation.**
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📖 About
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+QuizVibe is a modern, full-stack quiz platform that transforms traditional learning into a competitive experience. Players can challenge their knowledge through solo quizzes, go head-to-head in real-time PvP duels across three distinct battle modes, and compete in structured tournaments with live bracket tracking — all powered by an AI question engine and backed by Supabase Realtime for instant synchronization.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Features
 
-## Learn More
+### 🧠 Solo Quiz Engine
 
-To learn more about Next.js, take a look at the following resources:
+- Timed quiz sessions with configurable **category**, **difficulty**, and **question count**
+- Real-time progress bar and per-question feedback with explanations
+- Automatic score calculation and results summary
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### ⚡ Blitz Round (PvP)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 60-second infinite question race — answer as many as possible before time runs out
+- Live opponent score tracking via Supabase Realtime presence
+- Ranked by most correct answers; tiebroken by speed
 
-## Deploy on Vercel
+### 🏹 Category Wars (PvP)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Each player secretly picks their **strongest category**
+- Questions alternate between both players' categories (Q1 = yours, Q2 = theirs, ...)
+- **Turf banner** highlights home vs. away questions for strategic tension
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 🏆 Tournament Bracket
+
+- Admin creates 4-player or 8-player single-elimination brackets
+- Auto-generates matchups with seeding and creates a duel room per match
+- **Live public Tournament Board** with real-time bracket updates via Supabase subscriptions
+- Automatic bracket advancement — winners are promoted, losers eliminated, champion crowned
+
+### 🤖 AI Question Generator
+
+- Admin tool powered by **Gemini AI** to generate quiz questions on any topic
+- Outputs structured questions with options, correct answer, and explanation
+- Supports creating new categories inline during the generation flow
+
+### 📊 Multi-Mode Leaderboard
+
+- **Solo Quiz** — ranked by accuracy then speed, with gold/silver/bronze podium
+- **Blitz** — best score (correct answers in 60s) and duel wins
+- **Category Wars** — win count and best score per player
+- **Tournaments** — championship titles (🏆) and total match wins
+
+### 🛠 Admin Dashboard
+
+- Full **CRUD for questions and categories** with rich management UI
+- **Quiz Request system** — users submit topic requests, admins accept/reject and generate questions
+- **Tournament management** — create, start, view live bracket, and manually report match winners
+- Pending request badge counter in sidebar
+
+### 🔐 Authentication
+
+- Admin-only protected routes via Supabase Auth
+- Secure login page with session management
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Vanilla CSS with Material Design tokens |
+| Animations | Motion/React (Framer Motion) |
+| Database | Supabase (PostgreSQL) |
+| Realtime | Supabase Realtime + Presence |
+| AI | Google Gemini API |
+| Deployment | Vercel |
+
+---
+
+## 👥 Team
+
+| Member | Role |
+|---|---|
+| **DERBAL Mehdi** | G02 GL |
+| **DEKOUNE Abderrahmen** | G01 GL |
+| **BOUFEDJI Amine** | G01 GL |
+
+---
+
+## 📁 Repository & Live Demo
+
+🔗 **[https://github.com/abdurrahmen/quiz-vibe](https://github.com/abdurrahmen/quiz-vibe)**
+🔗 **[https://quiz-vibe-seven.vercel.app](https://quiz-vibe-seven.vercel.app)**
+
+---
