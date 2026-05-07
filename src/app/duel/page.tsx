@@ -156,16 +156,16 @@ export default function DuelHubPage() {
                 onClick={() => { setTab(t); setError('') }}
                 className={`flex-1 py-4 font-bold text-sm transition-colors duration-200 capitalize relative ${
                   tab === t
-                    ? 'text-primary bg-primary/5'
-                    : 'text-slate-500 hover:text-primary'
+                    ? 'text-primary bg-white shadow-sm z-10'
+                    : 'text-slate-500 bg-surface-container-lowest shadow-none hover:text-primary z-0 hover:bg-slate-50'
                 }`}
               >
                 {t === 'create' ? '⚡ Create Duel' : '🚪 Join Duel'}
-                {/* Animated underline */}
+                {/* Animated underline at the top for active tab */}
                 {tab === t && (
                   <motion.div
                     layoutId="duel-tab-underline"
-                    className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary rounded-full"
+                    className="absolute top-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -227,10 +227,10 @@ export default function DuelHubPage() {
                           />
                           <div className={`
                             text-center text-xs font-bold py-3 px-1 rounded-xl border-2 
-                            border-surface-variant text-slate-500
+                            border-surface-variant text-slate-500 bg-white shadow-none hover:shadow-sm
                             peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary 
-                            peer-checked:border-l-4 peer-checked:border-l-primary
-                            hover:border-primary/50 hover:scale-[1.02] hover:shadow-md
+                            peer-checked:border-l-4 peer-checked:border-l-primary peer-checked:shadow-md
+                            hover:border-primary/50 hover:scale-[1.02]
                             transition-all duration-200 ease-in-out
                           `}>
                             <div className="text-lg mb-0.5">{m.emoji}</div>
@@ -279,8 +279,8 @@ export default function DuelHubPage() {
                                 text-center text-xs font-bold py-2.5 rounded-xl border-2 capitalize
                                 transition-all duration-200 ease-in-out
                                 ${isSelected 
-                                  ? `${config.selectedBg} ${config.selectedBorder} ${config.selectedText}` 
-                                  : 'border-surface-variant text-slate-500 hover:border-primary/50'
+                                  ? `${config.selectedBg} ${config.selectedBorder} ${config.selectedText} shadow-md` 
+                                  : 'border-surface-variant text-slate-500 bg-white shadow-none hover:shadow-sm hover:border-primary/50'
                                 }
                               `}>
                                 <span className={`
@@ -330,9 +330,9 @@ export default function DuelHubPage() {
                     <span
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)',
+                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
                         animation: 'shimmer 3s ease-in-out infinite',
-                        width: '50%',
+                        width: '100%',
                       }}
                     />
                     <span className="relative z-10 flex items-center justify-center gap-2">
@@ -411,9 +411,9 @@ export default function DuelHubPage() {
                     <span
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
+                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
                         animation: 'shimmer 3.5s ease-in-out infinite',
-                        width: '50%',
+                        width: '100%',
                       }}
                     />
                     <span className="relative z-10 flex items-center justify-center gap-2">
