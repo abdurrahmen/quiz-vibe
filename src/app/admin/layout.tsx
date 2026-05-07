@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { logout } from './login/actions'
+import { createClient } from '@/utils/supabase/client'
 
 export default function AdminLayout({
   children,
@@ -12,6 +13,23 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchPendingCount() {
+      try {
+        const supabase = createClient()
+        const { count } = await supabase
+          .from('quiz_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending')
+        setPendingCount(count || 0)
+      } catch {
+        // Table might not exist yet
+      }
+    }
+    fetchPendingCount()
+  }, [pathname])
 
   // Don't show sidebar on login page
   if (pathname === '/admin/login') {
@@ -22,6 +40,7 @@ export default function AdminLayout({
     { href: '/admin/dashboard', icon: 'grid_view', label: 'Dashboard' },
     { href: '/admin/questions', icon: 'quiz', label: 'Questions' },
     { href: '/admin/categories', icon: 'category', label: 'Categories' },
+    { href: '/admin/quiz-requests', icon: 'request_quote', label: 'Quiz Requests', badge: pendingCount },
   ]
 
   return (
@@ -85,6 +104,11 @@ export default function AdminLayout({
               >
                 <span className={`material-symbols-outlined ${isActive ? 'filled' : ''}`}>{link.icon}</span>
                 {link.label}
+                {(link as any).badge > 0 && (
+                  <span className="ml-auto bg-error text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                    {(link as any).badge}
+                  </span>
+                )}
               </Link>
             )
           })}

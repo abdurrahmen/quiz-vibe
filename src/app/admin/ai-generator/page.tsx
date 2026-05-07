@@ -1,25 +1,49 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Category } from '@/lib/types'
-import { generateQuestions } from './actions'
+import { generateQuestions, createCategoryAction } from './actions'
 
-export default function AIGenerator() {
+export default function AIGeneratorPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 p-6 md:p-8 flex items-center justify-center">
+        <span className="material-symbols-outlined animate-spin text-primary text-[40px]">sync</span>
+      </main>
+    }>
+      <AIGenerator />
+    </Suspense>
+  )
+}
+
+function AIGenerator() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
 
-  // Form State
-  const [topic, setTopic] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [difficulty, setDifficulty] = useState('medium')
-  const [questionType, setQuestionType] = useState('MCQ')
-  const [count, setCount] = useState(5)
+  const searchParams = useSearchParams()
+
+  // Form State — initialized from URL search params (from quiz request accept flow)
+  const [topic, setTopic] = useState(searchParams.get('topic') || '')
+  const [categoryId, setCategoryId] = useState(searchParams.get('category') || '')
+  const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || 'medium')
+  const [questionType, setQuestionType] = useState(searchParams.get('type') || 'MCQ')
+  const [count, setCount] = useState(parseInt(searchParams.get('count') || '5'))
   const [additionalInstructions, setAdditionalInstructions] = useState('')
 
   // Preview State
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
+
+  // Inline new category state
+  const initialNewCategory = searchParams.get('newCategory')
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(!!initialNewCategory)
+  const [newCatName, setNewCatName] = useState(initialNewCategory || '')
+  const [newCatIcon, setNewCatIcon] = useState('category')
+  const [newCatColor, setNewCatColor] = useState('#4d41df')
+  const [creatingCategory, setCreatingCategory] = useState(false)
 
   useEffect(() => {
     async function fetchCategories() {
@@ -29,6 +53,35 @@ export default function AIGenerator() {
     }
     fetchCategories()
   }, [])
+
+  const handleCreateCategory = async () => {
+    if (!newCatName.trim()) return
+    setCreatingCategory(true)
+    try {
+      const { data, error } = await createCategoryAction(newCatName.trim(), newCatIcon, newCatColor)
+      
+      if (error) throw new Error(error)
+      if (data) {
+        setCategories(prev => [...prev, data as Category].sort((a, b) => a.name.localeCompare(b.name)))
+        setCategoryId(data.id)
+        setShowNewCategoryForm(false)
+        setNewCatName('')
+        setNewCatIcon('category')
+        setNewCatColor('#4d41df')
+        
+        // Remove newCategory from url so it doesn't pop up again on refresh
+        if (searchParams.has('newCategory')) {
+          const params = new URLSearchParams(searchParams.toString())
+          params.delete('newCategory')
+          window.history.replaceState(null, '', `?${params.toString()}`)
+        }
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to create category')
+    } finally {
+      setCreatingCategory(false)
+    }
+  }
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,15 +193,26 @@ export default function AIGenerator() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Category */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-on-surface">Assign Category</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-semibold text-on-surface">Assign Category</label>
+                  </div>
+                  
                   <select
                     value={categoryId}
-                    onChange={e => setCategoryId(e.target.value)}
+                    onChange={e => {
+                      if (e.target.value === 'CREATE_NEW') {
+                        setShowNewCategoryForm(true)
+                        // Don't set categoryId yet
+                      } else {
+                        setCategoryId(e.target.value)
+                      }
+                    }}
                     className="w-full bg-surface border-2 border-surface-variant focus:border-primary rounded-xl px-4 py-3 outline-none transition-colors appearance-none cursor-pointer"
                     required
                   >
                     <option value="" disabled>Select...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <option value="CREATE_NEW" className="font-bold text-primary">➕ Create New Category</option>
                   </select>
                 </div>
 

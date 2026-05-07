@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import type { Category } from '@/lib/types'
 import { createCategory, updateCategory, deleteCategory } from './actions'
 
@@ -12,15 +13,18 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
   const [editingCategory, setEditingCategory] = useState<EnrichedCategory | null>(null)
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState('')
+  const [modalKey, setModalKey] = useState(0) // Force re-render of form inputs
 
   const openNewModal = () => {
     setEditingCategory(null)
+    setModalKey(prev => prev + 1)
     setIsModalOpen(true)
     setError('')
   }
 
   const openEditModal = (cat: EnrichedCategory) => {
     setEditingCategory(cat)
+    setModalKey(prev => prev + 1)
     setIsModalOpen(true)
     setError('')
   }
@@ -29,11 +33,15 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
     if (!confirm('Are you sure you want to delete this category? This will fail if there are questions attached.')) return
     
     setIsPending(true)
-    const result = await deleteCategory(id)
-    if (result.error) {
-      alert(result.error)
-    } else {
-      setCategories(categories.filter(c => c.id !== id))
+    try {
+      const result = await deleteCategory(id)
+      if (result.error) {
+        alert(result.error)
+      } else {
+        setCategories(prev => prev.filter(c => c.id !== id))
+      }
+    } catch (err) {
+      alert('Failed to delete category')
     }
     setIsPending(false)
   }
@@ -46,23 +54,27 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
     const formData = new FormData(e.currentTarget)
     
     let result
-    if (editingCategory) {
-      result = await updateCategory(editingCategory.id, formData)
-    } else {
-      result = await createCategory(formData)
-    }
+    try {
+      if (editingCategory) {
+        result = await updateCategory(editingCategory.id, formData)
+      } else {
+        result = await createCategory(formData)
+      }
 
-    if (result.error) {
-      setError(result.error)
-    } else {
-      // Re-fetch or just reload the page to get the updated data
-      window.location.reload()
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setIsModalOpen(false)
+        window.location.reload()
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
     }
     setIsPending(false)
   }
 
   return (
-    <>
+    <main className="flex-1 p-6 md:p-8 overflow-y-auto space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
@@ -71,7 +83,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
         </div>
         <button 
           onClick={openNewModal}
-          className="bg-gradient-to-r from-primary to-tertiary text-white font-semibold py-2.5 px-6 rounded-xl flex items-center gap-2 shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
+          className="bg-linear-to-r from-primary to-tertiary text-white font-semibold py-2.5 px-6 rounded-xl flex items-center gap-2 shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
         >
           <span className="material-symbols-outlined filled">add_box</span>
           New Category
@@ -118,12 +130,23 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
           
           return (
             <div key={category.id} className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 flex flex-col group relative overflow-hidden">
-              {/* Actions Overlay */}
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
-                <button onClick={() => openEditModal(category)} className="text-outline hover:text-primary transition-colors p-1.5 rounded-md hover:bg-primary-fixed/50" title="Edit Category">
+              {/* Actions — Always visible on mobile, hover on desktop */}
+              <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); openEditModal(category) }}
+                  className="text-outline hover:text-primary transition-colors p-1.5 rounded-md hover:bg-primary-fixed/50"
+                  title="Edit Category"
+                >
                   <span className="material-symbols-outlined text-[18px]">edit</span>
                 </button>
-                <button onClick={() => handleDelete(category.id)} className="text-outline hover:text-error transition-colors p-1.5 rounded-md hover:bg-error-container/80" title="Delete Category">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(category.id) }}
+                  disabled={isPending}
+                  className="text-outline hover:text-error transition-colors p-1.5 rounded-md hover:bg-error-container/80 disabled:opacity-50"
+                  title="Delete Category"
+                >
                   <span className="material-symbols-outlined text-[18px]">delete</span>
                 </button>
               </div>
@@ -134,15 +157,15 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
                 style={{ backgroundColor: category.color || '#4d41df' }}
               />
 
-              <div className="flex items-center gap-4 mb-4 relative z-10">
+              <div className="flex items-center gap-4 mb-4 relative z-[1]">
                 <div 
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-105"
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-105 shrink-0"
                   style={{ backgroundColor: category.color || '#4d41df' }}
                 >
                   <span className="material-symbols-outlined text-[32px]">{category.icon || 'category'}</span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-on-surface">{category.name}</h3>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-on-surface truncate">{category.name}</h3>
                   <p className="text-sm text-on-surface-variant line-clamp-1">{category.description || 'No description provided'}</p>
                 </div>
               </div>
@@ -186,77 +209,87 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8 animate-scale-in">
-            <h2 className="text-2xl font-bold text-on-surface mb-6">
-              {editingCategory ? 'Edit Category' : 'Create Category'}
-            </h2>
-            {error && <div className="mb-4 bg-error-container text-on-error-container p-3 rounded-xl text-sm font-medium">{error}</div>}
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Name</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  defaultValue={editingCategory?.name} 
-                  required
-                  className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none" 
-                  placeholder="e.g. Science" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Description</label>
-                <textarea 
-                  name="description" 
-                  defaultValue={editingCategory?.description || ''} 
-                  className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none min-h-[100px]" 
-                  placeholder="Short description..." 
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" 
+            onClick={() => setIsModalOpen(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8" 
+              onClick={e => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-on-surface mb-6">
+                {editingCategory ? 'Edit Category' : 'Create Category'}
+              </h2>
+              {error && <div className="mb-4 bg-error-container text-on-error-container p-3 rounded-xl text-sm font-medium">{error}</div>}
+              
+              <form key={modalKey} onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface mb-1">Icon (Material)</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-1">Name</label>
                   <input 
                     type="text" 
-                    name="icon" 
-                    defaultValue={editingCategory?.icon || 'category'} 
+                    name="name" 
+                    defaultValue={editingCategory?.name || ''} 
+                    required
                     className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none" 
-                    placeholder="e.g. public" 
+                    placeholder="e.g. Science" 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface mb-1">Color (Hex)</label>
-                  <input 
-                    type="color" 
-                    name="color" 
-                    defaultValue={editingCategory?.color || '#4d41df'} 
-                    className="w-full h-12 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-2 outline-none cursor-pointer" 
+                  <label className="block text-sm font-semibold text-on-surface mb-1">Description</label>
+                  <textarea 
+                    name="description" 
+                    defaultValue={editingCategory?.description || ''} 
+                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none min-h-[100px]" 
+                    placeholder="Short description..." 
                   />
                 </div>
-              </div>
-              
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 px-4 font-bold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={isPending}
-                  className="flex-1 py-3 px-4 font-bold bg-primary text-white rounded-xl shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-70"
-                >
-                  {isPending ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-on-surface mb-1">Icon (Material)</label>
+                    <input 
+                      type="text" 
+                      name="icon" 
+                      defaultValue={editingCategory?.icon || 'category'} 
+                      className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none" 
+                      placeholder="e.g. public" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-on-surface mb-1">Color (Hex)</label>
+                    <input 
+                      type="color" 
+                      name="color" 
+                      defaultValue={editingCategory?.color || '#4d41df'} 
+                      className="w-full h-12 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-2 outline-none cursor-pointer" 
+                    />
+                  </div>
+                </div>
+                
+                <div className="pt-4 flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 py-3 px-4 font-bold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isPending}
+                    className="flex-1 py-3 px-4 font-bold bg-primary text-white rounded-xl shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-70"
+                  >
+                    {isPending ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
   )
 }

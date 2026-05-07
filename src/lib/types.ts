@@ -59,3 +59,18 @@ export interface DashboardStats {
   total_attempts: number
   avg_score: number
 }
+
+export interface QuizRequest {
+  id: string
+  username: string
+  topic: string
+  category_id: string | null
+  category?: Category
+  difficulty: string
+  question_type: string
+  question_count: number
+  message: string | null
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  reviewed_at: string | null
+}

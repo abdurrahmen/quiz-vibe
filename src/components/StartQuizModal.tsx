@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'motion/react'
 import { createClient } from '@/utils/supabase/client'
 import type { Category, Difficulty } from '@/lib/types'
 
@@ -95,9 +96,14 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
   }
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-xs p-6 animate-fade-in">
-      <div
-        className="bg-surface w-full max-w-[480px] rounded-2xl p-8 shadow-ambient-lg border border-outline-variant/30 flex flex-col relative animate-scale-in"
+    <motion.div 
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-100 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-xs p-6" 
+      onClick={onClose}
+    >
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-surface w-full max-w-[480px] rounded-2xl p-8 shadow-ambient-lg border border-outline-variant/30 flex flex-col relative" 
         onClick={e => e.stopPropagation()}
       >
         <button
@@ -200,7 +206,7 @@ export default function StartQuizModal({ onClose, categories }: StartQuizModalPr
             </p>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

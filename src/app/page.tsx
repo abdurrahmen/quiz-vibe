@@ -2,18 +2,19 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { createClient } from '@/utils/supabase/client'
 import type { Category } from '@/lib/types'
 import StartQuizModal from '@/components/StartQuizModal'
+import RequestQuizModal from '@/components/RequestQuizModal'
 import { Wrapper3D } from '@/components/ui/3d-wrapper'
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
-import { motion } from 'motion/react'
-
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [stats, setStats] = useState({ questions: 0, categories: 0, attempts: 0 })
   const [showStartModal, setShowStartModal] = useState(false)
+  const [showRequestModal, setShowRequestModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -85,6 +86,13 @@ export default function HomePage() {
               Start Quiz
             </button>
             <button
+              onClick={() => setShowRequestModal(true)}
+              className="hidden md:inline-flex px-4 py-2 text-sm font-semibold text-tertiary bg-tertiary-fixed rounded-lg hover:bg-tertiary/10 transition-colors items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">request_quote</span>
+              Request Quiz
+            </button>
+            <button
               className="md:hidden p-2 text-slate-600 hover:text-primary"
               onClick={() => setMenuOpen(!menuOpen)}
             >
@@ -100,6 +108,7 @@ export default function HomePage() {
             <Link href="#categories" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Categories</Link>
             <Link href="/leaderboard" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
             <Link href="#how-it-works" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>How It Works</Link>
+            <button onClick={() => { setShowRequestModal(true); setMenuOpen(false) }} className="text-tertiary font-semibold py-2 text-left">Request a Quiz</button>
             <Link href="/admin/login" className="text-primary font-semibold py-2">Admin Login</Link>
           </div>
         )}
@@ -151,6 +160,13 @@ export default function HomePage() {
                 Learn More
                 <span className="material-symbols-outlined">arrow_downward</span>
               </Link>
+              <button
+                onClick={() => setShowRequestModal(true)}
+                className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/25 transition-all"
+              >
+                <span className="material-symbols-outlined">request_quote</span>
+                Request a Quiz
+              </button>
             </div>
           </div>
 
@@ -439,13 +455,24 @@ export default function HomePage() {
         </div>
       </motion.footer>
 
-      {/* Start Quiz Modal */}
-      {showStartModal && (
-        <StartQuizModal
-          onClose={() => setShowStartModal(false)}
-          categories={categories}
-        />
-      )}
+      {/* Modals with AnimatePresence */}
+      <AnimatePresence>
+        {showStartModal && (
+          <StartQuizModal
+            onClose={() => setShowStartModal(false)}
+            categories={categories}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showRequestModal && (
+          <RequestQuizModal
+            onClose={() => setShowRequestModal(false)}
+            categories={categories}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

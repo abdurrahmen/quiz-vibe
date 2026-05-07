@@ -1,6 +1,9 @@
 'use server'
 
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 
 export async function generateQuestions(params: {
   topic: string
@@ -57,4 +60,19 @@ Return ONLY the JSON array.`
     console.error('AI Generation Error:', error)
     return { error: error.message || 'Failed to generate questions or parse AI response.' }
   }
+}
+
+export async function createCategoryAction(name: string, icon: string, color: string) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+  const { data, error } = await supabase
+    .from('categories')
+    .insert({ name, icon, color })
+    .select()
+    .single()
+  
+  if (error) return { error: error.message }
+  revalidatePath('/admin')
+  revalidatePath('/')
+  return { data }
 }
