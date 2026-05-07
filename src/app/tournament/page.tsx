@@ -51,7 +51,7 @@ export default async function TournamentsListPage() {
       {/* Nav */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-extrabold tracking-tight text-gradient">QuizMaster Pro</Link>
+          <Link href="/" className="text-2xl font-extrabold tracking-tight text-gradient">QuizVibe</Link>
           <Link href="/" className="text-slate-600 hover:text-primary transition-colors font-medium text-sm flex items-center gap-1">
             <span className="material-symbols-outlined text-base">home</span> Home
           </Link>

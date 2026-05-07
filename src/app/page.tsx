@@ -130,7 +130,7 @@ export default function HomePage() {
               Start Quiz
             </button>
             <button
-              className="md:hidden p-2 text-slate-600 hover:text-primary"
+              className="md:hidden text-slate-600 hover:text-primary"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               <span className="material-symbols-outlined">{menuOpen ? 'close' : 'menu'}</span>
@@ -145,6 +145,7 @@ export default function HomePage() {
             <Link href="#categories" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Categories</Link>
             <Link href="/leaderboard" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
             <Link href="/duel" className="text-yellow-600 font-bold py-2 flex items-center gap-2 bg-yellow-50/50 px-3 rounded-lg" onClick={() => setMenuOpen(false)}>⚡ Duel Mode</Link>
+            <Link href="/tournament" className="text-slate-700 font-medium py-2 flex items-center gap-2" onClick={() => setMenuOpen(false)}>🏆 Tournaments</Link>
             <div className="w-full h-px bg-slate-100 my-1"></div>
             <button onClick={() => { setShowRequestModal(true); setMenuOpen(false) }} className="text-tertiary font-semibold py-2 text-left">Request a Quiz</button>
           </div>
@@ -218,7 +219,7 @@ export default function HomePage() {
                 Start Quiz Now
               </button>
               <Link
-                href="#how-it-works"
+                href="/admin/login"
                 className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-all"
               >
                 <span className="material-symbols-outlined">login</span>

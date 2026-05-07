@@ -212,7 +212,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
       {/* Data Table */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-ambient overflow-hidden flex-1 border border-surface-variant/50">
         <div className="overflow-x-auto h-full">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant text-sm font-semibold border-b border-surface-variant">
                 <th className="py-4 px-6 w-12 text-center">

@@ -74,14 +74,14 @@ export default function AdminTournamentsClient() {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col md:flex-row gap-6">
       {/* Sidebar — tournament list */}
-      <div className="w-72 shrink-0">
+      <div className="w-full md:w-72 shrink-0">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-extrabold text-on-surface">Tournaments</h2>
           <button
             onClick={() => setShowCreate(v => !v)}
-            className="flex items-center gap-1 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:-translate-y-0.5 transition-all shadow-primary"
+            className="flex items-center gap-1 bg-primary text-white text-xs font-bold px-3 py-1.5 min-h-[44px] rounded-lg hover:-translate-y-0.5 transition-all shadow-primary"
           >
             <span className="material-symbols-outlined text-sm">{showCreate ? 'close' : 'add'}</span>
             {showCreate ? 'Cancel' : 'Create'}
@@ -148,7 +148,7 @@ export default function AdminTournamentsClient() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1">
+      <div className="flex-1 w-full min-w-0">
         {selectedTournament ? (
           <div className="space-y-6">
             {/* Tournament header */}
@@ -171,7 +171,7 @@ export default function AdminTournamentsClient() {
                     <button
                       onClick={handleStart}
                       disabled={starting}
-                      className="flex items-center gap-1 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:-translate-y-0.5 transition-all shadow-primary disabled:opacity-60"
+                      className="flex items-center gap-1 bg-primary text-white text-xs font-bold px-3 py-1.5 min-h-[44px] rounded-lg hover:-translate-y-0.5 transition-all shadow-primary disabled:opacity-60"
                     >
                       <span className="material-symbols-outlined text-sm">play_arrow</span>
                       {starting ? 'Starting...' : `Start (${players.length}/${selectedTournament.max_players}p)`}
@@ -215,23 +215,25 @@ export default function AdminTournamentsClient() {
             {/* Admin: manually report match winners */}
             {selectedTournament.status === 'in_progress' && (
               <div className="bg-white rounded-2xl shadow-ambient border border-slate-100 p-6">
-                <h3 className="font-extrabold text-on-surface mb-4">
+                <h3 className="font-extrabold text-on-surface mb-4 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary align-middle mr-1">gavel</span>
                   Report Match Results
                 </h3>
                 <div className="space-y-3">
                   {matches.filter(m => m.status === 'in_progress').map(m => (
-                    <div key={m.id} className="flex items-center gap-3 bg-surface-container-low p-3 rounded-xl">
-                      <span className="text-xs font-bold text-outline">R{m.round}M{m.match_number}</span>
-                      <span className="text-sm font-bold text-on-surface flex-1">
-                        {m.player1_name} <span className="text-outline font-normal">vs</span> {m.player2_name}
-                      </span>
-                      <div className="flex gap-2">
+                    <div key={m.id} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-surface-container-low p-3 rounded-xl">
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className="text-xs font-bold text-outline">R{m.round}M{m.match_number}</span>
+                        <span className="text-sm font-bold text-on-surface flex-1">
+                          {m.player1_name} <span className="text-outline font-normal">vs</span> {m.player2_name}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
                         {[m.player1_name, m.player2_name].filter(Boolean).map(name => (
                           <button
                             key={name}
                             onClick={() => handleReportWinner(m.id, name!)}
-                            className="bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all"
+                            className="bg-primary/10 text-primary text-xs font-bold px-4 py-2 min-h-[44px] rounded-lg hover:bg-primary hover:text-white transition-all flex-1 sm:flex-none"
                           >
                             {name} Wins
                           </button>

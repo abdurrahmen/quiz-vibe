@@ -218,7 +218,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8" 
+              className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8 max-h-[90vh] overflow-y-auto custom-scrollbar" 
               onClick={e => e.stopPropagation()}
             >
               <h2 className="text-2xl font-bold text-on-surface mb-6">

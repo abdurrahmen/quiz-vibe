@@ -226,15 +226,15 @@ export default async function LeaderboardPage() {
             <SectionHeader emoji="🧠" title="Solo Quiz" subtitle="Top scores across all quiz attempts — ranked by accuracy then speed" color="bg-primary/5" />
             {soloScores && soloScores.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full text-left min-w-max">
                   <thead>
                     <tr className="bg-surface-container-low text-outline text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
-                      <th className="py-3 px-6">#</th>
-                      <th className="py-3 px-6">Player</th>
-                      <th className="py-3 px-6">Category</th>
-                      <th className="py-3 px-6">Accuracy</th>
-                      <th className="py-3 px-6">Time</th>
-                      <th className="py-3 px-6 text-right">Date</th>
+                      <th className="py-3 px-4 md:px-6">#</th>
+                      <th className="py-3 px-4 md:px-6">Player</th>
+                      <th className="py-3 px-4 md:px-6">Category</th>
+                      <th className="py-3 px-4 md:px-6">Accuracy</th>
+                      <th className="py-3 px-4 md:px-6">Time</th>
+                      <th className="py-3 px-4 md:px-6 text-right">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">

@@ -214,7 +214,7 @@ export default async function AdminDashboard() {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-surface-container-low border-b border-surface-variant text-outline text-sm font-semibold">
                 <th className="py-4 px-6 font-medium">User</th>
