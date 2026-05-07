@@ -94,7 +94,7 @@ export default function DuelHubPage() {
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary/90 to-tertiary text-white py-20 px-6">
+      <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary/90 to-tertiary text-white px-6 py-16 text-center">
         {/* Floating Decorative Icons */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-[0]" aria-hidden="true">
           {DUEL_FLOATING_ICONS.map((icon) => (
@@ -123,34 +123,16 @@ export default function DuelHubPage() {
         </div>
 
         {/* Dark gradient overlay at bottom for smooth blend */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/15 to-transparent z-[1] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/10 to-transparent z-[1] pointer-events-none" />
 
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 200 }}
-            className="text-9xl mb-6"
-            style={{ animation: 'goldenGlow 3s ease-in-out infinite' }}
-          >
+        <div className="relative z-10">
+          <div className="text-6xl mb-4" style={{ animation: 'goldenGlow 3s ease-in-out infinite' }}>
             ⚡
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight"
-          >
-            Duel Mode
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-xl text-white/80 font-medium max-w-xl mx-auto"
-          >
+          </div>
+          <h1 className="text-4xl font-extrabold mb-3">Duel Mode</h1>
+          <p className="text-white/80 max-w-md mx-auto">
             Challenge a friend to a real-time quiz battle. Race through 10 questions and prove who&apos;s the smartest.
-          </motion.p>
+          </p>
         </div>
       </div>
 
