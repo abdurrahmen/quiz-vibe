@@ -38,12 +38,38 @@ function AIGenerator() {
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
 
   // Inline new category state
-  const initialNewCategory = searchParams.get('newCategory')
-  const [showNewCategoryForm, setShowNewCategoryForm] = useState(!!initialNewCategory)
-  const [newCatName, setNewCatName] = useState(initialNewCategory || '')
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(!!searchParams.get('newCategory'))
+  const [newCatName, setNewCatName] = useState(searchParams.get('newCategory') || '')
   const [newCatIcon, setNewCatIcon] = useState('category')
   const [newCatColor, setNewCatColor] = useState('#4d41df')
   const [creatingCategory, setCreatingCategory] = useState(false)
+
+  // Sync form fields from URL params when they change (e.g. router.push from quiz-requests accept)
+  // This handles the case where the component is already mounted and params change client-side
+  useEffect(() => {
+    const newTopic = searchParams.get('topic') || ''
+    const newCategoryId = searchParams.get('category') || ''
+    const newDifficulty = searchParams.get('difficulty') || 'medium'
+    const newQuestionType = searchParams.get('type') || 'MCQ'
+    const newCount = parseInt(searchParams.get('count') || '5')
+    const newCategoryName = searchParams.get('newCategory') || ''
+
+    setTopic(newTopic)
+    setCategoryId(newCategoryId)
+    setDifficulty(newDifficulty)
+    setQuestionType(newQuestionType)
+    setCount(newCount)
+
+    if (newCategoryName) {
+      setNewCatName(newCategoryName)
+      setShowNewCategoryForm(true)
+      setCategoryId('') // no existing category, need to create
+    } else {
+      // Only hide form if there's no pending new category name
+      setShowNewCategoryForm(false)
+      setNewCatName('')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     async function fetchCategories() {
@@ -198,17 +224,17 @@ function AIGenerator() {
                   </div>
                   
                   <select
-                    value={categoryId}
+                    value={showNewCategoryForm ? 'CREATE_NEW' : categoryId}
                     onChange={e => {
                       if (e.target.value === 'CREATE_NEW') {
                         setShowNewCategoryForm(true)
-                        // Don't set categoryId yet
+                        setCategoryId('')
                       } else {
+                        setShowNewCategoryForm(false)
                         setCategoryId(e.target.value)
                       }
                     }}
                     className="w-full bg-surface border-2 border-surface-variant focus:border-primary rounded-xl px-4 py-3 outline-none transition-colors appearance-none cursor-pointer"
-                    required
                   >
                     <option value="" disabled>Select...</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -230,6 +256,68 @@ function AIGenerator() {
                   </select>
                 </div>
               </div>
+
+              {/* Inline Create New Category Form */}
+              {showNewCategoryForm && (
+                <div className="bg-primary-fixed/10 border-2 border-primary/20 rounded-xl p-4 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-on-surface flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-primary text-[18px]">add_circle</span>
+                      New Category
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => { setShowNewCategoryForm(false); setNewCatName(''); setCategoryId('') }}
+                      className="text-outline hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={newCatName}
+                    onChange={e => setNewCatName(e.target.value)}
+                    placeholder="Category name (e.g. Science, History...)"
+                    className="w-full bg-surface border-2 border-surface-variant focus:border-primary rounded-xl px-4 py-2.5 outline-none transition-colors text-sm"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-on-surface-variant">Icon (Material Symbol)</label>
+                      <input
+                        type="text"
+                        value={newCatIcon}
+                        onChange={e => setNewCatIcon(e.target.value)}
+                        placeholder="e.g. science, history"
+                        className="w-full bg-surface border-2 border-surface-variant focus:border-primary rounded-xl px-3 py-2 outline-none transition-colors text-sm"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-semibold text-on-surface-variant">Color</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={newCatColor}
+                          onChange={e => setNewCatColor(e.target.value)}
+                          className="w-10 h-10 rounded-lg border-2 border-surface-variant cursor-pointer p-0.5"
+                        />
+                        <span className="text-xs text-outline font-mono">{newCatColor}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCreateCategory}
+                    disabled={creatingCategory || !newCatName.trim()}
+                    className="w-full bg-primary text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    {creatingCategory ? (
+                      <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating...</>
+                    ) : (
+                      <><span className="material-symbols-outlined text-[18px]">save</span>Create &amp; Select Category</>
+                    )}
+                  </button>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Question Type */}
@@ -279,7 +367,7 @@ function AIGenerator() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={generating || !topic || !categoryId}
+                disabled={generating || !topic || !categoryId || showNewCategoryForm}
                 className="w-full bg-linear-to-r from-primary to-tertiary text-white font-bold py-4 px-6 rounded-xl shadow-primary hover:shadow-primary-lg transition-all flex justify-center items-center gap-2 mt-4 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {generating ? (

@@ -11,7 +11,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  
+
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
@@ -33,14 +33,14 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
   }
 
   const handleSelectOne = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     )
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this question?')) return
-    
+
     setIsPending(true)
     const result = await deleteQuestion(id)
     if (result.error) {
@@ -96,7 +96,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
 
     setIsPending(true)
     const formData = new FormData(e.currentTarget)
-    
+
     const options: string[] = []
     let i = 0
     while (formData.has(`option${i}`)) {
@@ -152,7 +152,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
         </div>
         <div className="flex flex-wrap gap-4">
           {selectedIds.length > 0 && (
-            <button 
+            <button
               onClick={handleBulkDelete}
               className="bg-error-container text-on-error-container border-2 border-error/20 hover:border-error font-semibold py-2 px-4 rounded-xl flex items-center gap-2 hover:bg-error transition-all shadow-sm animate-fade-in"
             >
@@ -160,14 +160,14 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
               Delete Selected ({selectedIds.length})
             </button>
           )}
-          <button 
+          <button
             onClick={openCreateModal}
             className="bg-surface text-primary border-2 border-primary/20 hover:border-primary font-semibold py-2 px-6 rounded-xl flex items-center gap-2 hover:bg-primary-fixed transition-all shadow-sm"
           >
             <span className="material-symbols-outlined">add</span>
             New Question
           </button>
-          <a href="/admin/ai-generator" className="bg-gradient-to-r from-primary to-tertiary text-white font-semibold py-2 px-6 rounded-xl flex items-center gap-2 shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all">
+          <a href="/admin/ai-generator" className="bg-linear-to-r from-primary to-tertiary text-white font-semibold py-2 px-6 rounded-xl flex items-center gap-2 shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all">
             <span className="material-symbols-outlined filled">auto_awesome</span>
             Generate Questions
           </a>
@@ -180,7 +180,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
           {/* Search */}
           <div className="relative flex-1 md:w-80">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-            <input 
+            <input
               type="text"
               placeholder="Search questions..."
               value={searchQuery}
@@ -191,7 +191,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
 
           {/* Category Filter */}
           <div className="relative w-full md:w-48">
-            <select 
+            <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="w-full appearance-none bg-surface-container-low border border-surface-variant text-on-surface font-medium rounded-xl py-2.5 pl-4 pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer transition-colors"
@@ -216,11 +216,11 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant text-sm font-semibold border-b border-surface-variant">
                 <th className="py-4 px-6 w-12 text-center">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     onChange={handleSelectAll}
                     checked={selectedIds.length === filteredQuestions.length && filteredQuestions.length > 0}
-                    className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" 
+                    className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                   />
                 </th>
                 <th className="py-4 px-6 w-24">ID</th>
@@ -235,18 +235,18 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                 const isSCQ = q.type === 'SCQ'
                 const isMCQ = q.type === 'MCQ'
                 const isSelected = selectedIds.includes(q.id)
-                
+
                 return (
                   <tr key={q.id} className={`hover:bg-surface-container-low/50 transition-colors group ${isPending ? 'opacity-50 pointer-events-none' : ''} ${isSelected ? 'bg-primary-fixed/20' : ''}`}>
                     <td className="py-4 px-6 text-center">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectOne(q.id)}
-                        className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" 
+                        className="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                       />
                     </td>
-                    <td className="py-4 px-6 text-outline font-mono text-xs">#Q-{(q.id).slice(0,4)}</td>
+                    <td className="py-4 px-6 text-outline font-mono text-xs">#Q-{(q.id).slice(0, 4)}</td>
                     <td className="py-4 px-6">
                       <div className="flex flex-col gap-1">
                         <div className="truncate max-w-[300px] lg:max-w-[500px] font-semibold text-on-surface group-hover:text-primary transition-colors" title={q.question_text}>
@@ -263,25 +263,24 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                        isMCQ ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' : 
-                        isSCQ ? 'bg-primary-fixed text-on-primary-fixed-variant' : 
-                        'bg-secondary-fixed text-on-secondary-fixed-variant'
-                      }`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${isMCQ ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' :
+                          isSCQ ? 'bg-primary-fixed text-on-primary-fixed-variant' :
+                            'bg-secondary-fixed text-on-secondary-fixed-variant'
+                        }`}>
                         {q.category?.name || 'Uncategorized'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
+                        <button
                           onClick={() => openEditModal(q)}
                           className="text-outline hover:text-primary transition-colors p-2 rounded-xl hover:bg-primary-fixed/50"
                           title="Edit Question"
                         >
                           <span className="material-symbols-outlined text-[20px]">edit</span>
                         </button>
-                        <button 
-                          onClick={() => handleDelete(q.id)} 
+                        <button
+                          onClick={() => handleDelete(q.id)}
                           className="text-outline hover:text-error transition-colors p-2 rounded-xl hover:bg-error-container/80"
                           title="Delete Question"
                         >
@@ -292,7 +291,7 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                   </tr>
                 )
               })}
-              
+
               {filteredQuestions.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
@@ -304,8 +303,8 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                         <p className="text-on-surface font-bold text-lg">No questions match your search</p>
                         <p className="text-on-surface-variant">Try adjusting your filters or search term.</p>
                       </div>
-                      <button 
-                        onClick={() => {setSearchQuery(''); setCategoryFilter('')}}
+                      <button
+                        onClick={() => { setSearchQuery(''); setCategoryFilter('') }}
                         className="mt-2 text-primary font-bold hover:underline"
                       >
                         Clear all filters
@@ -329,19 +328,19 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            
+
             <form onSubmit={handleEditSubmit} className="space-y-6">
               <div className="space-y-4">
                 {/* Question Text */}
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-2">Question Text</label>
-                  <textarea 
-                    name="question_text" 
-                    defaultValue={editingQuestion.question_text} 
+                  <textarea
+                    name="question_text"
+                    defaultValue={editingQuestion.question_text}
                     required
                     rows={3}
-                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none resize-none transition-all" 
-                    placeholder="Enter your question here..." 
+                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none resize-none transition-all"
+                    placeholder="Enter your question here..."
                   />
                 </div>
 
@@ -349,8 +348,8 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                   {/* Category */}
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-2">Category</label>
-                    <select 
-                      name="category_id" 
+                    <select
+                      name="category_id"
                       defaultValue={editingQuestion.category_id}
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
                     >
@@ -362,8 +361,8 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                   {/* Difficulty */}
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-2">Difficulty</label>
-                    <select 
-                      name="difficulty" 
+                    <select
+                      name="difficulty"
                       defaultValue={editingQuestion.difficulty}
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
                     >
@@ -378,8 +377,8 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                   {/* Type */}
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-2">Type</label>
-                    <select 
-                      name="type" 
+                    <select
+                      name="type"
                       defaultValue={editingQuestion.type}
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
                     >
@@ -391,9 +390,9 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                   {/* Points */}
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-2">Points</label>
-                    <input 
-                      type="number" 
-                      name="points" 
+                    <input
+                      type="number"
+                      name="points"
                       defaultValue={editingQuestion.points}
                       min={1}
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
@@ -405,20 +404,20 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                 <div className="space-y-3">
                   <label className="block text-sm font-semibold text-on-surface">Options & Correct Answers</label>
                   <p className="text-xs text-on-surface-variant mb-2">Check the box next to the correct answer(s).</p>
-                  
+
                   {editingQuestion.options.map((option, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <input 
-                        type="checkbox" 
-                        name="correct_answers" 
+                      <input
+                        type="checkbox"
+                        name="correct_answers"
                         value={idx}
                         defaultChecked={editingQuestion.correct_answers.includes(idx)}
                         className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
                       />
-                      <input 
-                        type="text" 
-                        name={`option${idx}`} 
-                        defaultValue={option} 
+                      <input
+                        type="text"
+                        name={`option${idx}`}
+                        defaultValue={option}
                         required
                         className="flex-1 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-2 outline-none"
                         placeholder={`Option ${idx + 1}`}
@@ -431,26 +430,26 @@ export default function QuestionsClient({ initialQuestions, categories }: { init
                 {/* Explanation */}
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-2">Explanation (Optional)</label>
-                  <textarea 
-                    name="explanation" 
-                    defaultValue={editingQuestion.explanation || ''} 
+                  <textarea
+                    name="explanation"
+                    defaultValue={editingQuestion.explanation || ''}
                     rows={2}
-                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none resize-none transition-all" 
-                    placeholder="Explain why the answers are correct..." 
+                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none resize-none transition-all"
+                    placeholder="Explain why the answers are correct..."
                   />
                 </div>
               </div>
-              
+
               <div className="pt-4 flex gap-3 border-t border-surface-variant">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 py-3 px-4 font-bold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isPending}
                   className="flex-1 py-3 px-4 font-bold bg-primary text-white rounded-xl shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                 >

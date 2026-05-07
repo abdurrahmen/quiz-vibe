@@ -61,7 +61,7 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
         message: formData.message.trim() || null,
       }
 
-      if (useNewCategory && formData.new_category_name.trim()) {
+      if (formData.new_category_name.trim()) {
         // Store the new category name in the message field alongside user message
         insertData.category_id = null
         insertData.message = `[NEW CATEGORY: ${formData.new_category_name.trim()}] ${formData.message.trim() || ''}`
@@ -84,14 +84,14 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
 
   if (success) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-100 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-xs p-6" 
+        className="fixed inset-0 z-100 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-xs p-6"
         onClick={onClose}
       >
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-surface w-full max-w-[480px] rounded-2xl p-8 shadow-ambient-lg border border-outline-variant/30 flex flex-col items-center relative" 
+          className="bg-surface w-full max-w-[480px] rounded-2xl p-8 shadow-ambient-lg border border-outline-variant/30 flex flex-col items-center relative"
           onClick={e => e.stopPropagation()}
         >
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
@@ -185,8 +185,11 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
                 onChange={e => {
                   if (e.target.value === 'CREATE_NEW') {
                     setUseNewCategory(true)
+                  } else if (e.target.value === '__new__') {
+                    // Re-open popup to let user edit the suggested name
+                    setUseNewCategory(true)
                   } else {
-                    setFormData({ ...formData, category_id: e.target.value })
+                    setFormData({ ...formData, category_id: e.target.value, new_category_name: '' })
                   }
                 }}
                 className="w-full bg-surface-container-high text-on-surface py-3 px-4 rounded-xl border-2 border-transparent focus:border-primary focus:bg-surface outline-none transition-all appearance-none cursor-pointer"
@@ -196,6 +199,10 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
                 {categories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
+                {/* Shown only after user confirms a new category suggestion */}
+                {formData.new_category_name.trim() && (
+                  <option value="__new__">✨ {formData.new_category_name.trim()} (new suggested)</option>
+                )}
                 <option value="CREATE_NEW" className="font-bold text-primary">➕ Suggest New Category</option>
               </select>
             </div>
@@ -292,7 +299,7 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
 
       {/* Suggest New Category Popup */}
       {useNewCategory && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setUseNewCategory(false)}>
+        <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setUseNewCategory(false)}>
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             className="bg-surface rounded-2xl w-full max-w-sm p-6 shadow-ambient-lg"
@@ -324,8 +331,8 @@ export default function RequestQuizModal({ onClose, categories }: RequestQuizMod
                 onClick={() => {
                   if (formData.new_category_name.trim()) {
                     setUseNewCategory(false)
-                    // The select will show empty because category_id is 'CREATE_NEW' but not matched, but we can fake a generic option or let it be empty
-                    // Since it's stored in new_category_name we just leave it
+                    // Set sentinel value so the select visually shows the confirmed category
+                    setFormData(prev => ({ ...prev, category_id: '__new__' }))
                   }
                 }}
                 disabled={!formData.new_category_name.trim()}
