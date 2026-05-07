@@ -94,25 +94,6 @@ export default function AdminLogin() {
                 <span>{isPending ? 'Authenticating...' : 'Secure Login'}</span>
                 {!isPending && <span className="material-symbols-outlined">arrow_forward</span>}
               </button>
-
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={(e) => {
-                  const form = e.currentTarget.closest('form');
-                  if (form) {
-                    const emailInput = form.querySelector('#email') as HTMLInputElement;
-                    const pwdInput = form.querySelector('#password') as HTMLInputElement;
-                    if (emailInput) emailInput.value = 'admin.quizvibe@gmail.com';
-                    if (pwdInput) pwdInput.value = 'password123';
-                    form.requestSubmit();
-                  }
-                }}
-                className="w-full bg-[#F1F3FF] hover:bg-[#E5E8FB] text-primary font-bold py-3.5 px-6 rounded-2xl transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed border border-transparent hover:border-primary/20"
-              >
-                <span className="material-symbols-outlined">play_circle</span>
-                <span>Demo Login</span>
-              </button>
             </div>
           </form>
 

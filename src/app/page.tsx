@@ -59,40 +59,40 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-80 border-b border-slate-100/80 shadow-ambient">
-        <div className="max-w-7xl mx-auto py-4 flex justify-between items-center">
-          <div className="text-2xl md:px-0 px-6 font-extrabold tracking-tight text-gradient">
-            QuizVibe
+        <div className="max-w-7xl mx-auto py-4 px-6 md:px-8 flex items-center justify-between">
+          {/* Left: Logo */}
+          <div className="flex-1">
+            <div className="text-2xl font-extrabold tracking-tight text-gradient w-fit">
+              QuizVibe
+            </div>
           </div>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Center: Desktop nav */}
+          <div className="hidden md:flex flex-none items-center gap-8">
             <Link href="#features" className="text-slate-600 hover:text-primary transition-colors font-medium">Features</Link>
             <Link href="#categories" className="text-slate-600 hover:text-primary transition-colors font-medium">Categories</Link>
             <Link href="/leaderboard" className="text-slate-600 hover:text-primary transition-colors font-medium">Leaderboard</Link>
-            <Link href="/duel" className="flex items-center gap-1.5 text-slate-600 hover:text-primary transition-colors font-medium">
-              <span className="text-yellow-500">⚡</span> Duel
+            <Link href="/duel" className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/10 text-yellow-600 rounded-full hover:bg-yellow-400/20 hover:scale-105 transition-all font-bold group">
+              <span className="text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] group-hover:animate-pulse">⚡</span> Duel
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/login"
-              className="hidden md:inline-flex px-4 py-2 text-sm font-semibold text-primary bg-primary-fixed rounded-lg hover:bg-primary/10 transition-colors"
-            >
-              Admin Login
-            </Link>
-            <button
-              onClick={() => setShowStartModal(true)}
-              className="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-linear-to-r from-primary to-tertiary shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
-            >
-              Start Quiz
-            </button>
+          {/* Right: Actions */}
+          <div className="flex-1 flex justify-end items-center gap-4">
             <button
               onClick={() => setShowRequestModal(true)}
-              className="hidden md:inline-flex px-4 py-2 text-sm font-semibold text-tertiary bg-tertiary-fixed rounded-lg hover:bg-tertiary/10 transition-colors items-center gap-1.5"
+              className="hidden md:inline-flex text-sm font-semibold text-slate-500 hover:text-tertiary transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">request_quote</span>
               Request Quiz
+            </button>
+            
+            <div className="hidden md:block w-px h-6 bg-slate-200"></div>
+
+            <button
+              onClick={() => setShowStartModal(true)}
+              className="px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            >
+              Start Quiz
             </button>
             <button
               className="md:hidden p-2 text-slate-600 hover:text-primary"
@@ -105,14 +105,13 @@ export default function HomePage() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 px-6 py-4 flex flex-col gap-3 animate-fade-in">
+          <div className="md:hidden bg-white border-t border-slate-100 px-6 py-4 flex flex-col gap-3 animate-fade-in shadow-xl">
             <Link href="#features" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Features</Link>
             <Link href="#categories" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Categories</Link>
             <Link href="/leaderboard" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
-            <Link href="#how-it-works" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>How It Works</Link>
-            <Link href="/duel" className="text-yellow-600 font-semibold py-2 flex items-center gap-2" onClick={() => setMenuOpen(false)}>⚡ Duel Mode</Link>
+            <Link href="/duel" className="text-yellow-600 font-bold py-2 flex items-center gap-2 bg-yellow-50/50 px-3 rounded-lg" onClick={() => setMenuOpen(false)}>⚡ Duel Mode</Link>
+            <div className="w-full h-px bg-slate-100 my-1"></div>
             <button onClick={() => { setShowRequestModal(true); setMenuOpen(false) }} className="text-tertiary font-semibold py-2 text-left">Request a Quiz</button>
-            <Link href="/admin/login" className="text-primary font-semibold py-2">Admin Login</Link>
           </div>
         )}
       </nav>
@@ -142,7 +141,7 @@ export default function HomePage() {
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
               Test Your<br />
-              <span className="text-yellow-300">Knowledge</span>
+              <span className="text-yellow-400/90">Knowledge</span>
             </h1>
             <p className="text-lg text-white/90 max-w-lg leading-relaxed font-medium">
               Challenge yourself with expertly crafted quizzes. Elevate your learning through
@@ -157,25 +156,12 @@ export default function HomePage() {
                 Start Quiz Now
               </button>
               <Link
-                href="/duel"
-                className="flex items-center gap-2 bg-yellow-400/90 text-yellow-900 px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-              >
-                ⚡ Challenge a Friend
-              </Link>
-              <Link
-                href="#how-it-works"
+                href="/admin/login"
                 className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-all"
               >
-                Learn More
-                <span className="material-symbols-outlined">arrow_downward</span>
+                <span className="material-symbols-outlined">login</span>
+                Login
               </Link>
-              <button
-                onClick={() => setShowRequestModal(true)}
-                className="flex items-center gap-2 bg-white/15 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/25 transition-all"
-              >
-                <span className="material-symbols-outlined">request_quote</span>
-                Request a Quiz
-              </button>
             </div>
           </div>
 
