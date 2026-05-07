@@ -60,6 +60,30 @@ export interface DashboardStats {
   avg_score: number
 }
 
+export interface Duel {
+  id: string
+  room_code: string
+  creator_name: string
+  opponent_name: string | null
+  category_id: string | null
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed'
+  question_ids: string[]
+  status: 'waiting' | 'playing' | 'finished'
+  creator_score: number | null
+  opponent_score: number | null
+  creator_time_ms: number | null
+  opponent_time_ms: number | null
+  winner_name: string | null
+  created_at: string
+  started_at: string | null
+  finished_at: string | null
+}
+
+export interface DuelProgress {
+  answered: number
+  correct: number
+}
+
 export interface QuizRequest {
   id: string
   username: string

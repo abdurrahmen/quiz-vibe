@@ -69,7 +69,9 @@ export default function HomePage() {
             <Link href="#features" className="text-slate-600 hover:text-primary transition-colors font-medium">Features</Link>
             <Link href="#categories" className="text-slate-600 hover:text-primary transition-colors font-medium">Categories</Link>
             <Link href="/leaderboard" className="text-slate-600 hover:text-primary transition-colors font-medium">Leaderboard</Link>
-            <Link href="#how-it-works" className="text-slate-600 hover:text-primary transition-colors font-medium">How It Works</Link>
+            <Link href="/duel" className="flex items-center gap-1.5 text-slate-600 hover:text-primary transition-colors font-medium">
+              <span className="text-yellow-500">⚡</span> Duel
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -108,6 +110,7 @@ export default function HomePage() {
             <Link href="#categories" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Categories</Link>
             <Link href="/leaderboard" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
             <Link href="#how-it-works" className="text-slate-700 font-medium py-2" onClick={() => setMenuOpen(false)}>How It Works</Link>
+            <Link href="/duel" className="text-yellow-600 font-semibold py-2 flex items-center gap-2" onClick={() => setMenuOpen(false)}>⚡ Duel Mode</Link>
             <button onClick={() => { setShowRequestModal(true); setMenuOpen(false) }} className="text-tertiary font-semibold py-2 text-left">Request a Quiz</button>
             <Link href="/admin/login" className="text-primary font-semibold py-2">Admin Login</Link>
           </div>
@@ -153,6 +156,12 @@ export default function HomePage() {
                 <span className="material-symbols-outlined">rocket_launch</span>
                 Start Quiz Now
               </button>
+              <Link
+                href="/duel"
+                className="flex items-center gap-2 bg-yellow-400/90 text-yellow-900 px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                ⚡ Challenge a Friend
+              </Link>
               <Link
                 href="#how-it-works"
                 className="flex items-center gap-2 border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-all"

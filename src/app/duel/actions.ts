@@ -1,0 +1,161 @@
+'use server'
+
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+// Generate a short, readable room code like "QM-4X9B"
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let code = 'QM-'
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
+}
+
+export async function createDuel(formData: FormData) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const creatorName = formData.get('creator_name') as string
+  const categoryId = formData.get('category_id') as string || null
+  const difficulty = formData.get('difficulty') as string || 'mixed'
+
+  if (!creatorName?.trim()) {
+    return { error: 'Please enter your username.' }
+  }
+
+  // Fetch 10 random question IDs matching the filters
+  let query = supabase
+    .from('questions')
+    .select('id')
+
+  if (categoryId) {
+    query = query.eq('category_id', categoryId)
+  }
+  if (difficulty !== 'mixed') {
+    query = query.eq('difficulty', difficulty)
+  }
+
+  const { data: allQuestions, error: qErr } = await query
+  if (qErr || !allQuestions || allQuestions.length < 5) {
+    return { error: 'Not enough questions found for these filters. Try "Mixed" difficulty or a different category.' }
+  }
+
+  // Randomly sample 10 (or fewer if not enough)
+  const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+  const selectedIds = shuffled.slice(0, Math.min(10, shuffled.length)).map(q => q.id)
+
+  // Generate unique room code
+  let roomCode = generateRoomCode()
+  let attempts = 0
+  while (attempts < 10) {
+    const { data: existing } = await supabase
+      .from('duels')
+      .select('id')
+      .eq('room_code', roomCode)
+      .single()
+    if (!existing) break
+    roomCode = generateRoomCode()
+    attempts++
+  }
+
+  const { data: duel, error } = await supabase
+    .from('duels')
+    .insert([{
+      room_code: roomCode,
+      creator_name: creatorName.trim(),
+      category_id: categoryId,
+      difficulty,
+      question_ids: selectedIds,
+      status: 'waiting',
+    }])
+    .select()
+    .single()
+
+  if (error) return { error: error.message }
+
+  redirect(`/duel/${roomCode}?role=creator&username=${encodeURIComponent(creatorName.trim())}`)
+}
+
+export async function joinDuel(formData: FormData) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const opponentName = formData.get('opponent_name') as string
+  const roomCode = (formData.get('room_code') as string)?.toUpperCase().trim()
+
+  if (!opponentName?.trim()) return { error: 'Please enter your username.' }
+  if (!roomCode) return { error: 'Please enter a room code.' }
+
+  // Find the duel
+  const { data: duel, error: findErr } = await supabase
+    .from('duels')
+    .select('*')
+    .eq('room_code', roomCode)
+    .single()
+
+  if (findErr || !duel) return { error: `Room "${roomCode}" not found. Double-check the code.` }
+  if (duel.status !== 'waiting') return { error: 'This duel has already started or finished.' }
+  if (duel.creator_name === opponentName.trim()) return { error: 'You cannot join your own duel. Use a different username.' }
+
+  // Update the duel to add the opponent
+  const { error: updateErr } = await supabase
+    .from('duels')
+    .update({ opponent_name: opponentName.trim(), status: 'playing', started_at: new Date().toISOString() })
+    .eq('id', duel.id)
+
+  if (updateErr) return { error: updateErr.message }
+
+  redirect(`/duel/${roomCode}?role=opponent&username=${encodeURIComponent(opponentName.trim())}`)
+}
+
+export async function submitDuelResult(
+  duelId: string,
+  role: 'creator' | 'opponent',
+  score: number,
+  timeMs: number,
+  opponentScore?: number | null
+) {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const updatePayload: Record<string, unknown> = role === 'creator'
+    ? { creator_score: score, creator_time_ms: timeMs }
+    : { opponent_score: score, opponent_time_ms: timeMs }
+
+  const { data: duel, error: fetchErr } = await supabase
+    .from('duels')
+    .select('*')
+    .eq('id', duelId)
+    .single()
+
+  if (fetchErr || !duel) return { error: 'Duel not found.' }
+
+  // If both have finished, determine winner
+  const bothFinished =
+    (role === 'creator' && duel.opponent_score !== null) ||
+    (role === 'opponent' && duel.creator_score !== null)
+
+  if (bothFinished) {
+    const creatorScore = role === 'creator' ? score : duel.creator_score!
+    const opponentScoreFinal = role === 'opponent' ? score : duel.opponent_score!
+    const creatorTime = role === 'creator' ? timeMs : duel.creator_time_ms!
+    const opponentTime = role === 'opponent' ? timeMs : duel.opponent_time_ms!
+
+    let winnerName: string | null = null
+    if (creatorScore > opponentScoreFinal) winnerName = duel.creator_name
+    else if (opponentScoreFinal > creatorScore) winnerName = duel.opponent_name
+    else winnerName = creatorTime <= opponentTime ? duel.creator_name : duel.opponent_name // tiebreaker: faster wins
+
+    updatePayload.status = 'finished'
+    updatePayload.winner_name = winnerName
+    updatePayload.finished_at = new Date().toISOString()
+  }
+
+  const { error } = await supabase.from('duels').update(updatePayload).eq('id', duelId)
+  if (error) return { error: error.message }
+
+  return { success: true }
+}
