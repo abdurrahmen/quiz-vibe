@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import type { Category } from '@/lib/types'
 import { createCategory, updateCategory, deleteCategory } from './actions'
+import toast from 'react-hot-toast'
 
 type EnrichedCategory = Category & { question_count: number, target: number }
 
@@ -31,17 +32,17 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this category? This will fail if there are questions attached.')) return
-    
+
     setIsPending(true)
     try {
       const result = await deleteCategory(id)
       if (result.error) {
-        alert(result.error)
+        toast.error(result.error)
       } else {
         setCategories(prev => prev.filter(c => c.id !== id))
       }
     } catch (err) {
-      alert('Failed to delete category')
+      toast.error('Failed to delete category')
     }
     setIsPending(false)
   }
@@ -52,7 +53,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
     setError('')
 
     const formData = new FormData(e.currentTarget)
-    
+
     let result
     try {
       if (editingCategory) {
@@ -81,7 +82,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
           <h1 className="text-3xl font-bold text-on-surface mb-2">Manage Categories</h1>
           <p className="text-on-surface-variant">Create, update, and monitor topic categories for your quizzes.</p>
         </div>
-        <button 
+        <button
           onClick={openNewModal}
           className="bg-linear-to-r from-primary to-tertiary text-white font-semibold py-2.5 px-6 rounded-xl flex items-center gap-2 shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
         >
@@ -101,7 +102,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
             <div className="text-sm font-semibold text-outline uppercase tracking-wide">Total Categories</div>
           </div>
         </div>
-        
+
         <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-tertiary-fixed text-tertiary flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px] filled">quiz</span>
@@ -111,7 +112,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
             <div className="text-sm font-semibold text-outline uppercase tracking-wide">Total Questions</div>
           </div>
         </div>
-        
+
         <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-secondary-fixed text-secondary flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px] filled">equalizer</span>
@@ -127,7 +128,7 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
         {categories.map((category) => {
           const progressPercent = Math.min(100, Math.round((category.question_count / category.target) * 100))
-          
+
           return (
             <div key={category.id} className="bg-surface-container-lowest rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 flex flex-col group relative overflow-hidden">
               {/* Actions — Always visible on mobile, hover on desktop */}
@@ -152,13 +153,13 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
               </div>
 
               {/* Decorative gradient corner */}
-              <div 
+              <div
                 className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity"
                 style={{ backgroundColor: category.color || '#4d41df' }}
               />
 
-              <div className="flex items-center gap-4 mb-4 relative z-[1]">
-                <div 
+              <div className="flex items-center gap-4 mb-4 relative z-1">
+                <div
                   className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-105 shrink-0"
                   style={{ backgroundColor: category.color || '#4d41df' }}
                 >
@@ -180,14 +181,14 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
                     <span className="text-sm font-semibold text-on-surface-variant">Target: {category.target}</span>
                   </div>
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full rounded-full transition-all duration-1000 ease-out"
-                    style={{ 
-                      width: `${progressPercent}%`, 
-                      backgroundColor: category.color || '#4d41df' 
+                    style={{
+                      width: `${progressPercent}%`,
+                      backgroundColor: category.color || '#4d41df'
                     }}
                   />
                 </div>
@@ -211,74 +212,74 @@ export default function CategoriesClient({ initialCategories, stats }: { initial
       {/* Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"
             onClick={() => setIsModalOpen(false)}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8 max-h-[90vh] overflow-y-auto custom-scrollbar" 
+              className="bg-surface rounded-3xl shadow-ambient-lg max-w-md w-full p-8 max-h-[90vh] overflow-y-auto custom-scrollbar"
               onClick={e => e.stopPropagation()}
             >
               <h2 className="text-2xl font-bold text-on-surface mb-6">
                 {editingCategory ? 'Edit Category' : 'Create Category'}
               </h2>
               {error && <div className="mb-4 bg-error-container text-on-error-container p-3 rounded-xl text-sm font-medium">{error}</div>}
-              
+
               <form key={modalKey} onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-1">Name</label>
-                  <input 
-                    type="text" 
-                    name="name" 
-                    defaultValue={editingCategory?.name || ''} 
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editingCategory?.name || ''}
                     required
-                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none" 
-                    placeholder="e.g. Science" 
+                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
+                    placeholder="e.g. Science"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-1">Description</label>
-                  <textarea 
-                    name="description" 
-                    defaultValue={editingCategory?.description || ''} 
-                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none min-h-[100px]" 
-                    placeholder="Short description..." 
+                  <textarea
+                    name="description"
+                    defaultValue={editingCategory?.description || ''}
+                    className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none min-h-[100px]"
+                    placeholder="Short description..."
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-1">Icon (Material)</label>
-                    <input 
-                      type="text" 
-                      name="icon" 
-                      defaultValue={editingCategory?.icon || 'category'} 
-                      className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none" 
-                      placeholder="e.g. public" 
+                    <input
+                      type="text"
+                      name="icon"
+                      defaultValue={editingCategory?.icon || 'category'}
+                      className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-4 py-3 outline-none"
+                      placeholder="e.g. public"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-1">Color (Hex)</label>
-                    <input 
-                      type="color" 
-                      name="color" 
-                      defaultValue={editingCategory?.color || '#4d41df'} 
-                      className="w-full h-12 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-2 outline-none cursor-pointer" 
+                    <input
+                      type="color"
+                      name="color"
+                      defaultValue={editingCategory?.color || '#4d41df'}
+                      className="w-full h-12 bg-surface-container-low border-2 border-transparent focus:border-primary rounded-xl px-2 outline-none cursor-pointer"
                     />
                   </div>
                 </div>
-                
+
                 <div className="pt-4 flex gap-3">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setIsModalOpen(false)}
                     className="flex-1 py-3 px-4 font-bold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isPending}
                     className="flex-1 py-3 px-4 font-bold bg-primary text-white rounded-xl shadow-primary hover:shadow-primary-lg transition-all disabled:opacity-70"
                   >

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities, react-hooks/exhaustive-deps */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { QuizAttempt, Question } from '@/lib/types'
@@ -45,6 +45,35 @@ export default function QuizSession({
 
     return () => clearInterval(timer)
   }, [])
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      // Don't fire if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+
+      const num = parseInt(e.key)
+      if (!isNaN(num) && num >= 1 && num <= currentQuestion.options.length) {
+        handleOptionSelect(num - 1)
+        return
+      }
+      if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        if (currentIdx === questions.length - 1) {
+          handleSubmit()
+        } else {
+          setCurrentIdx(prev => prev + 1)
+        }
+        return
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setCurrentIdx(prev => Math.max(0, prev - 1))
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIdx, currentQuestion, questions.length, isSubmitting])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0')
@@ -140,7 +169,6 @@ export default function QuizSession({
       router.push(`/quiz/results/${attempt.id}`)
     } catch (err) {
       console.error('Failed to submit quiz:', err)
-      alert('Failed to submit quiz. Please try again.')
       setIsSubmitting(false)
     }
   }

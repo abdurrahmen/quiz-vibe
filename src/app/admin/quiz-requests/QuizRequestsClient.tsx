@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import { updateRequestStatus, deleteRequest } from './actions'
+import toast from 'react-hot-toast'
 
 interface QuizRequestItem {
   id: string
@@ -37,7 +38,7 @@ export default function QuizRequestsClient({ initialRequests, stats }: Props) {
     setActionPending(req.id)
     const result = await updateRequestStatus(req.id, 'approved')
     if (result.error) {
-      alert(result.error)
+      toast.error(result.error)
       setActionPending(null)
       return
     }
@@ -69,7 +70,7 @@ export default function QuizRequestsClient({ initialRequests, stats }: Props) {
     setActionPending(id)
     const result = await updateRequestStatus(id, 'rejected')
     if (result.error) {
-      alert(result.error)
+      toast.error(result.error)
     } else {
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' as const, reviewed_at: new Date().toISOString() } : r))
     }
@@ -81,7 +82,7 @@ export default function QuizRequestsClient({ initialRequests, stats }: Props) {
     setActionPending(id)
     const result = await deleteRequest(id)
     if (result.error) {
-      alert(result.error)
+      toast.error(result.error)
     } else {
       setRequests(prev => prev.filter(r => r.id !== id))
     }

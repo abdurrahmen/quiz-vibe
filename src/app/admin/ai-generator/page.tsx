@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Category } from '@/lib/types'
 import { generateQuestions, createCategoryAction } from './actions'
+import toast from 'react-hot-toast'
 
 export default function AIGeneratorPage() {
   return (
@@ -107,7 +108,7 @@ function AIGenerator() {
         router.replace(`?${params.toString()}`, { scroll: false })
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to create category')
+      toast.error(err.message || 'Failed to create category')
     } finally {
       setCreatingCategory(false)
     }
@@ -130,7 +131,7 @@ function AIGenerator() {
       } as any)
 
       if (result.error) {
-        alert(result.error)
+        toast.error(result.error)
         setGenerating(false)
         return
       }
@@ -140,7 +141,7 @@ function AIGenerator() {
       }
     } catch (err) {
       console.error(err)
-      alert('An unexpected error occurred during generation.')
+      toast.error('An unexpected error occurred during generation.')
     } finally {
       setGenerating(false)
     }
@@ -169,12 +170,12 @@ function AIGenerator() {
 
       if (error) throw error
 
-      alert('Questions saved successfully!')
+      toast.success('Questions saved successfully! 🎉')
       setGeneratedQuestions([])
       setTopic('')
     } catch (err) {
       console.error(err)
-      alert('Failed to save questions.')
+      toast.error('Failed to save questions.')
     } finally {
       setLoading(false)
     }

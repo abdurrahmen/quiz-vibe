@@ -62,7 +62,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
           {/* Hero Score Card */}
           <div className="md:col-span-7 bg-surface-container-lowest rounded-2xl p-8 shadow-ambient-lg flex flex-col items-center justify-center relative overflow-hidden group">
             {/* CSS Confetti Effect mapping via Tailwind global css */}
-            {attempt.score >= 70 && (
+            {attempt.score > 80 && (
               <>
                 <div className="confetti-piece bg-tertiary left-1/4 top-10"></div>
                 <div className="confetti-piece bg-secondary right-1/4 top-20"></div>
@@ -77,7 +77,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ attemp
                 <path className="text-surface-dim" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3"></path>
                 {/* Progress Circle */}
                 <path 
-                  className={attempt.score >= 70 ? "text-primary" : attempt.score >= 50 ? "text-tertiary" : "text-error"} 
+                  className={attempt.score > 80 ? "text-primary" : attempt.score >= 50 ? "text-tertiary" : "text-error"} 
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
                   fill="none" 
                   stroke="currentColor" 

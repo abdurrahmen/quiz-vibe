@@ -9,15 +9,16 @@ import type { Category, Difficulty } from '@/lib/types'
 interface StartQuizModalProps {
   onClose: () => void
   categories: Category[]
+  initialCategoryId?: string
 }
 
-export default function StartQuizModal({ onClose, categories }: StartQuizModalProps) {
+export default function StartQuizModal({ onClose, categories, initialCategoryId }: StartQuizModalProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     username: '',
-    category_id: 'all',
+    category_id: initialCategoryId || 'all',
     difficulty: 'all' as Difficulty | 'all',
   })
   const [counts, setCounts] = useState<Record<string, number>>({

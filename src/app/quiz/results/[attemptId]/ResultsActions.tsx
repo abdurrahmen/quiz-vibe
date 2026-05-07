@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 export default function ResultsActions({
   score,
@@ -21,7 +22,7 @@ export default function ResultsActions({
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(`I scored ${score}% on the ${categoryName} quiz on QuizMaster Pro! ${window.location.href}`)
-      alert('Results copied to clipboard!')
+      toast.success('Results copied to clipboard!')
     }
   }
 
@@ -43,8 +44,8 @@ export default function ResultsActions({
         href="/"
         className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-linear-to-r from-primary to-tertiary text-white font-bold shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-2"
       >
-        <span className="material-symbols-outlined text-[20px]">replay</span>
-        Take Another Quiz
+        <span className="material-symbols-outlined text-[20px]">home</span>
+        Home
       </Link>
       <button
         onClick={handleShare}

@@ -23,7 +23,7 @@ const FLOATING_ICONS = [
   { id: 8, icon: 'science', top: 90, left: 20, size: 50, rot: 15, dur: 6.5, delay: 1.9, mobile: false },
   { id: 9, icon: 'bolt', top: 10, left: 30, size: 38, rot: -10, dur: 3.5, delay: 2.5, mobile: true },
   { id: 10, icon: 'school', top: 55, left: 35, size: 60, rot: 20, dur: 7.0, delay: 0.7, mobile: false },
-  
+
   // Right side
   { id: 11, icon: 'emoji_events', top: 18, left: 85, size: 55, rot: 15, dur: 5.8, delay: 0.2, mobile: true },
   { id: 12, icon: 'bar_chart', top: 40, left: 92, size: 42, rot: -15, dur: 4.6, delay: 1.1, mobile: false },
@@ -35,7 +35,7 @@ const FLOATING_ICONS = [
   { id: 18, icon: 'science', top: 12, left: 65, size: 44, rot: 25, dur: 5.5, delay: 1.3, mobile: true },
   { id: 19, icon: 'edit', top: 92, left: 72, size: 36, rot: 5, dur: 4.8, delay: 0.6, mobile: false },
   { id: 20, icon: 'school', top: 38, left: 62, size: 52, rot: -20, dur: 6.8, delay: 1.5, mobile: false },
-  
+
   // Center-ish top/bottom
   { id: 21, icon: 'bolt', top: 5, left: 50, size: 34, rot: 10, dur: 4.1, delay: 2.0, mobile: true },
   { id: 22, icon: 'ads_click', top: 95, left: 45, size: 40, rot: -15, dur: 5.3, delay: 0.5, mobile: false },
@@ -45,7 +45,9 @@ const FLOATING_ICONS = [
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [stats, setStats] = useState({ questions: 0, categories: 0, attempts: 0 })
+  const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({})
   const [showStartModal, setShowStartModal] = useState(false)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -53,10 +55,11 @@ export default function HomePage() {
     const supabase = createClient()
 
     async function loadData() {
-      const [catRes, qRes, attRes] = await Promise.all([
+      const [catRes, qRes, attRes, qCountRes] = await Promise.all([
         supabase.from('categories').select('*').order('name'),
         supabase.from('questions').select('id', { count: 'exact', head: true }),
         supabase.from('quiz_attempts').select('id', { count: 'exact', head: true }),
+        supabase.from('questions').select('category_id'),
       ])
       if (catRes.data) setCategories(catRes.data)
       setStats({
@@ -64,27 +67,22 @@ export default function HomePage() {
         categories: catRes.data?.length ?? 0,
         attempts: attRes.count ?? 0,
       })
+      // Build question count map per category
+      if (qCountRes.data) {
+        const counts: Record<string, number> = {}
+        qCountRes.data.forEach((q: { category_id: string | null }) => {
+          if (q.category_id) counts[q.category_id] = (counts[q.category_id] || 0) + 1
+        })
+        setQuestionCounts(counts)
+      }
     }
 
     loadData()
   }, [])
 
-  const categoryIcons: Record<string, string> = {
-    Science: 'science',
-    Mathematics: 'calculate',
-    History: 'history_edu',
-    Literature: 'menu_book',
-    Technology: 'memory',
-    'General Knowledge': 'lightbulb',
-  }
-
-  const categoryColors: Record<string, string> = {
-    Science: 'from-blue-500 to-indigo-600',
-    Mathematics: 'from-purple-500 to-indigo-700',
-    History: 'from-rose-500 to-pink-700',
-    Literature: 'from-violet-500 to-purple-700',
-    Technology: 'from-indigo-500 to-blue-700',
-    'General Knowledge': 'from-orange-400 to-rose-600',
+  const openCategoryModal = (categoryId?: string) => {
+    setSelectedCategoryId(categoryId)
+    setShowStartModal(true)
   }
 
   return (
@@ -120,11 +118,11 @@ export default function HomePage() {
             >
               Request Quiz
             </button>
-            
+
             <div className="hidden md:block w-px h-6 bg-slate-200"></div>
 
             <button
-              onClick={() => setShowStartModal(true)}
+              onClick={() => openCategoryModal()}
               className="px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               Start Quiz
@@ -170,7 +168,7 @@ export default function HomePage() {
         className="relative z-50 pt-24 pb-28 px-6"
       >
         {/* Floating Decorative Icons */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[0]" aria-hidden="true">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
           {FLOATING_ICONS.map((icon) => (
             <div
               key={icon.id}
@@ -412,18 +410,35 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                onClick={() => setShowStartModal(true)}
-                className="group relative bg-white rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 overflow-hidden text-left"
+                onClick={() => openCategoryModal(cat.id)}
+                className="group relative bg-white rounded-2xl p-6 shadow-ambient hover:shadow-ambient-lg transition-all duration-300 overflow-hidden text-left hover:-translate-y-1"
               >
-                <div className={`absolute inset-0 bg-linear-to-br opacity-0 group-hover:opacity-5 transition-opacity ${categoryColors[cat.name] || 'from-primary to-tertiary'}`} />
-                <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${categoryColors[cat.name] || 'from-primary to-tertiary'} flex items-center justify-center text-white mb-4 shadow-md`}>
-                  <span className="material-symbols-outlined">{categoryIcons[cat.name] || 'category'}</span>
+                {/* Subtle color wash on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-8 transition-opacity rounded-2xl"
+                  style={{ backgroundColor: cat.color || '#4d41df' }}
+                />
+                {/* Icon */}
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-white mb-4 shadow-md"
+                  style={{ backgroundColor: cat.color || '#4d41df' }}
+                >
+                  <span className="material-symbols-outlined">{cat.icon || 'category'}</span>
                 </div>
                 <h3 className="text-lg font-bold text-on-surface mb-1">{cat.name}</h3>
                 <p className="text-sm text-on-surface-variant mb-4">{cat.description || 'Explore this category'}</p>
-                <div className="flex items-center gap-2 text-primary text-sm font-semibold">
-                  <span>Start Quiz</span>
-                  <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-primary text-sm font-semibold">
+                    <span>Start Quiz</span>
+                    <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  </div>
+                  {/* Question count badge */}
+                  <span
+                    className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
+                    style={{ backgroundColor: cat.color || '#4d41df' }}
+                  >
+                    {questionCounts[cat.id] ?? 0} Qs
+                  </span>
                 </div>
               </motion.button>
             )) : (
@@ -484,7 +499,7 @@ export default function HomePage() {
 
           <div className="text-center mt-12">
             <button
-              onClick={() => setShowStartModal(true)}
+              onClick={() => openCategoryModal()}
               className="inline-flex items-center gap-2 bg-linear-to-r from-primary to-tertiary text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-primary hover:shadow-primary-lg hover:-translate-y-0.5 transition-all"
             >
               <span className="material-symbols-outlined">rocket_launch</span>
@@ -517,8 +532,9 @@ export default function HomePage() {
       <AnimatePresence>
         {showStartModal && (
           <StartQuizModal
-            onClose={() => setShowStartModal(false)}
+            onClose={() => { setShowStartModal(false); setSelectedCategoryId(undefined) }}
             categories={categories}
+            initialCategoryId={selectedCategoryId}
           />
         )}
       </AnimatePresence>
