@@ -105,3 +105,43 @@ export interface QuizRequest {
   created_at: string
   reviewed_at: string | null
 }
+
+export interface Tournament {
+  id: string
+  title: string
+  description: string | null
+  category_id: string | null
+  difficulty: string
+  mode: 'standard' | 'blitz'
+  max_players: 4 | 8
+  status: 'registration' | 'in_progress' | 'finished'
+  winner_name: string | null
+  created_at: string
+  started_at: string | null
+  finished_at: string | null
+}
+
+export interface TournamentPlayer {
+  id: string
+  tournament_id: string
+  username: string
+  seed: number | null
+  status: 'active' | 'eliminated' | 'champion'
+  wins: number
+  created_at: string
+}
+
+export interface TournamentMatch {
+  id: string
+  tournament_id: string
+  round: number
+  match_number: number
+  player1_name: string | null
+  player2_name: string | null
+  duel_id: string | null
+  room_code: string | null
+  winner_name: string | null
+  status: 'pending' | 'in_progress' | 'finished' | 'bye'
+  created_at: string
+  finished_at: string | null
+}

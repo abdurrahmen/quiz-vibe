@@ -72,6 +72,9 @@ export default function HomePage() {
             <Link href="/duel" className="flex items-center gap-1.5 text-slate-600 hover:text-primary transition-colors font-medium">
               <span className="text-yellow-500">⚡</span> Duel
             </Link>
+            <Link href="/tournament" className="flex items-center gap-1.5 text-slate-600 hover:text-primary transition-colors font-medium">
+              <span>🏆</span> Tournaments
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -161,6 +164,12 @@ export default function HomePage() {
                 className="flex items-center gap-2 bg-yellow-400/90 text-yellow-900 px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
                 ⚡ Challenge a Friend
+              </Link>
+              <Link
+                href="/tournament"
+                className="flex items-center gap-2 bg-white/15 border border-white/40 text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:bg-white/25 hover:-translate-y-0.5 transition-all"
+              >
+                🏆 Tournaments
               </Link>
               <Link
                 href="#how-it-works"
